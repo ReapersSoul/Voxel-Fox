@@ -1,0 +1,17 @@
+{
+    "Lua.diagnostics.globals": [
+        "glDrawCube",
+        "glColor",
+        "VoxelFox",
+        "glDrawLine",
+        "GetVar",
+        "SetVar",
+        "STICK_1",
+        "JOYSTICK_1",
+        "STICK_2",
+        "BUTTON_A",
+        "BUTTON_B",
+        "BUTTON_X",
+        "BUTTON_Y"
+    ]
+}
