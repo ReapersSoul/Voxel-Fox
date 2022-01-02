@@ -20,6 +20,7 @@ using namespace glm;
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <filesystem>
 #include <map>
 #include <Windows.h>
 
@@ -1144,7 +1145,7 @@ namespace VoxelFox {
 		}
 
 		struct Material {
-			Math::Vec3<float> Color;
+			Math::Vec4<float> Color;
 			Texture ColorMap;
 		};
 
@@ -1184,7 +1185,7 @@ namespace VoxelFox {
 						g = atof(tmp.c_str());
 						std::getline(TokenStream, tmp, ' ');
 						b = atof(tmp.c_str());
-						Mat.Color=Math::Vec3<float>(r, g, b);
+						Mat.Color=Math::Vec4<float>(r, g, b,1);
 				}
 				if (Identifier == "map_Kd"&&BuildingMat) {
 						std::getline(TokenStream, tmp, ' ');
@@ -1262,6 +1263,7 @@ namespace VoxelFox {
 				Math::Vec3<float> rot;
 				Math::Vec3<float> scl;
 				std::vector<Math::Vec3<float>> data;
+				std::vector<Math::Vec3<float>> normals;
 				std::vector<std::string> MaterialIDs;
 				std::vector<Math::Vec2<float>> TextureCoords;
 				std::vector<Face> Faces;
@@ -1273,6 +1275,12 @@ namespace VoxelFox {
 
 				std::vector<Math::Vec3<float>> * getData() {
 					return &data;
+				}
+				std::vector<Math::Vec3<float>> * getNormals() {
+					return &normals;
+				}
+				std::vector<Math::Vec3<float>> getDrawableNormals() {
+					return normals;
 				}
 				std::vector<std::string> * getMatIDS() {
 					return &MaterialIDs;
@@ -1347,6 +1355,8 @@ namespace VoxelFox {
 				}
 			};
 
+			std::map<std::string, Mesh> Meshes;
+
 			static class MeshLoader {
 
 			public:
@@ -1401,7 +1411,13 @@ namespace VoxelFox {
 							ret.getTextureCoords()->push_back(Math::Vec2<float>(x, y));
 						}
 						if (token == "vn") {
-							continue;
+							std::getline(lineStream, token, ' ');
+							float x = atof(token.c_str());
+							std::getline(lineStream, token, ' ');
+							float y = atof(token.c_str());
+							std::getline(lineStream, token, ' ');
+							float z = atof(token.c_str());
+							ret.getNormals()->push_back(Math::Vec3<float>(x, y, z));
 						}
 						if (token == "f") {
 							Mesh::Face face;
@@ -1424,6 +1440,14 @@ namespace VoxelFox {
 					return ret;
 				}
 			};
+
+			void LoadMeshesFromDir(std::string path) {
+				for (auto const& dir_entry : std::filesystem::directory_iterator{ std::filesystem::path{path} }) {
+					if (dir_entry.path().extension() == ".obj") {
+						Meshes.insert(std::pair<std::string, Mesh>(dir_entry.path().filename().string(), MeshLoader::LoadOBJ(path, dir_entry.path().filename().string())));
+					}
+				}
+			}
 
 			class Mesh2D {
 			public:
@@ -1957,6 +1981,7 @@ namespace VoxelFox {
 
 		class Camera : public Lua::ClassTable{
 			Math::Vec3<float> Pos;
+			Math::Vec3<float> Rot;
 			Math::Vec3<float> EyePos;
 			float NearPlane;
 			float FarPlane;
@@ -2006,6 +2031,12 @@ namespace VoxelFox {
 				return FarPlane;
 			}
 
+			Math::Vec3<float> GetAppliedEyePos() {
+				Math::Vec3<float> ret = EyePos;
+				ret.Rotate(Rot);
+				return ret;
+			}
+
 			Math::Vec3<float> GetEyePos(){
 				return EyePos;
 			}
@@ -2015,6 +2046,9 @@ namespace VoxelFox {
 			Math::Vec3<float> GetPos(){
 				return Pos;
 			}
+			Math::Vec3<float> GetRot(){
+				return Rot;
+			}
 			Math::Vec3<float>* GetPosPoint() {
 				return &Pos;
 			}
@@ -2023,6 +2057,9 @@ namespace VoxelFox {
 			}
 			void SetPos(Math::Vec3<float> v) {
 				Pos = v;
+			}
+			void SetRot(Math::Vec3<float> v) {
+				Rot = v;
 			}
 		};
 
@@ -2106,6 +2143,7 @@ namespace VoxelFox {
 			typedef void(*UIFunction)(Window* window);
 			typedef void(*DrawFunction)(Window* window);
 			typedef void(*UpdateFunction)(Window* window);
+			typedef void(*FinalFunction)(Window* window);
 			typedef void(*SetupFunction)(Window* window);
 
 			GLFWwindow* window;
@@ -2124,6 +2162,7 @@ namespace VoxelFox {
 			UIFunction UILoop;
 			DrawFunction DrawLoop;
 			UpdateFunction UpdateLoop;
+			FinalFunction FinalLoop;
 			SetupFunction Setup;
 
 			void DrawFunct() {
@@ -2154,7 +2193,12 @@ namespace VoxelFox {
 				glfwSetKeyCallback(window, KeyHandler);
 				glfwSetCursorPosCallback(window, MousePosHandler);
 				glfwSetMouseButtonCallback(window, mouse_button_callback);
-
+				static int w = 0;
+				static int h = 0;
+				glfwSetFramebufferSizeCallback(window, [](GLFWwindow* wind, int width, int Height) {
+					w = width;
+					h = Height;
+					});
 				Setup(this);
 				/* Loop until the user closes the window */
 				isOpen = true;
@@ -2164,12 +2208,28 @@ namespace VoxelFox {
 					inputHandler.CheckControllers();
 					inputHandler.Update();
 					isFocus = tmpfocus;
+					width = w;
+					height = h;
 					/* Render here */
-					UpdateLoop(this);
-					gluPerspective(cams[selectedCam].GetFOV(), width / height, cams[selectedCam].GetNearPlane(), cams[selectedCam].GetFarPlane());
-					gluLookAt(cams[selectedCam].GetEyePos().x, cams[selectedCam].GetEyePos().y, cams[selectedCam].GetEyePos().z, cams[selectedCam].GetPos().x, cams[selectedCam].GetPos().y, cams[selectedCam].GetPos().z, 0, 1, 0);
-					DrawLoop(this);
-					UILoop(this);
+					if (UpdateLoop!=nullptr) {
+						UpdateLoop(this);
+					}
+					if (width != 0 && height != 0) {
+						gluPerspective(cams[selectedCam].GetFOV(), width / height, cams[selectedCam].GetNearPlane(), cams[selectedCam].GetFarPlane());
+					}
+					else {
+						gluPerspective(cams[selectedCam].GetFOV(), 1, cams[selectedCam].GetNearPlane(), cams[selectedCam].GetFarPlane());
+					}
+					gluLookAt(cams[selectedCam].GetAppliedEyePos().x, cams[selectedCam].GetAppliedEyePos().y, cams[selectedCam].GetAppliedEyePos().z, cams[selectedCam].GetPos().x, cams[selectedCam].GetPos().y, cams[selectedCam].GetPos().z, 0, 1, 0);
+					if (DrawLoop != nullptr) {
+						DrawLoop(this);
+					}
+					if (UILoop != nullptr) {
+						UILoop(this);
+					}
+					if (FinalLoop != nullptr) {
+						FinalLoop(this);
+					}
 					/* Swap front and back buffers */
 					glfwSwapBuffers(window);
 
@@ -2228,11 +2288,12 @@ namespace VoxelFox {
 			float getRatio() {
 				return ratio;
 			}
-			void Init(std::string title, int x, int y, UpdateFunction UFunct, DrawFunction DFunct, SetupFunction setup, UIFunction ui) {
+			void Init(std::string title, int x, int y, UpdateFunction UFunct, DrawFunction DFunct, SetupFunction setup, UIFunction ui, FinalFunction finalf) {
 				Setup = setup;
 				UpdateLoop = UFunct;
 				DrawLoop = DFunct;
 				UILoop = ui;
+				FinalLoop = finalf;
 				this->width = x;
 				this->height = y;
 				this->title = title;
@@ -2251,6 +2312,7 @@ namespace VoxelFox {
 			void Draw(Geometry::Mesh m) {
 				if (!fillObject) {
 					std::vector<Math::Vec3<float>> data = m.getDrawableData();
+					std::vector<Math::Vec3<float>> normals = m.getDrawableNormals();
 					std::vector<Math::Vec2<float>> TexCoords = *m.getTextureCoords();
 					std::vector<Geometry::Mesh::Face> Faces = m.getDrawableFaces();
 					std::map<std::string, Material>::iterator it;
@@ -2265,7 +2327,7 @@ namespace VoxelFox {
 								texindex = Faces[i].Tex;
 								it = Materials.find(m.getDrawableMatIDS()[Faces[i].Tex]);
 								if (it != Materials.end()) {
-									glColor3f(it->second.Color.x, it->second.Color.y, it->second.Color.z);
+									glColor4f(it->second.Color.x, it->second.Color.y, it->second.Color.z, it->second.Color.w);
 									BindTexture(it->second.ColorMap);
 								}
 							}
@@ -2276,11 +2338,17 @@ namespace VoxelFox {
 								glBegin(GL_QUADS);
 							}
 							for (int j = 0; j < Faces[i].face.size(); j++) {
-								glTexCoord2f(TexCoords[Faces[i].face[j].y].x, TexCoords[Faces[i].face[j].y].y);
+								if (normals.size() > 0) {
+									glNormal3f(normals[Faces[i].face[j].z].x, normals[Faces[i].face[j].z].y, normals[Faces[i].face[j].z].z);
+								}
+								if (TexCoords.size() > 0) {
+									glTexCoord2f(TexCoords[Faces[i].face[j].y].x, TexCoords[Faces[i].face[j].y].y);
+								}
 								glVertex3f(data[Faces[i].face[j].x].x, data[Faces[i].face[j].x].y, data[Faces[i].face[j].x].z);
 							}
 							glEnd();
 						}
+						glDisable(GL_TEXTURE_2D);
 						break;
 					case Geometry::Mesh::quad:
 						glBegin(GL_QUADS);

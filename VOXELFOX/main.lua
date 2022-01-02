@@ -1,30 +1,9 @@
-SetVar("rotx",0)
-SetVar("roty",0)
-SetVar("rotz",0)
-SetVar("posx",0)
-SetVar("posy",0)
-SetVar("posz",0)
-SetVar("P1Colr",0)
-SetVar("P1Colg",0)
-SetVar("P1Colb",0)
-SetVar("P2Colr",0)
-SetVar("P2Colg",0)
-SetVar("P2Colb",0)
-SetVar("P3Colr",0)
-SetVar("P3Colg",0)
-SetVar("P3Colb",0)
-SetVar("P4Colr",0)
-SetVar("P4Colg",0)
-SetVar("P4Colb",0)
-SetVar("P5Colr",0)
-SetVar("P5Colg",0)
-SetVar("P5Colb",0)
-SetVar("P6Colr",0)
-SetVar("P6Colg",0)
-SetVar("P6Colb",0)
-SetVar("Speed",0.001)
-SetVar("DeadZoneStick1",0.1)
-SetVar("DeadZoneStick2",0.1)
+P1Color=VoxelFox.Math.Vec3(1,1,1)
+P2Color=VoxelFox.Math.Vec3(1,1,1)
+P3Color=VoxelFox.Math.Vec3(1,1,1)
+P4Color=VoxelFox.Math.Vec3(1,1,1)
+P5Color=VoxelFox.Math.Vec3(1,1,1)
+P6Color=VoxelFox.Math.Vec3(1,1,1)
 
 --Input Here
 VoxelFox.Input.NewInput("c1s1",nil,4,STICK_1,JOYSTICK_1)
@@ -37,27 +16,9 @@ VoxelFox.Input.NewInput("MousePos",nil,3,nil,nil)
 VoxelFox.Input.NewInput("MouseClick",0,2,nil,nil)
 VoxelFox.Input.NewInput("KeyBoard_E",69,1,nil,nil)
 
-function Data()
+function Update()
 	
---	VoxelFox.Window.GetCam(0).SetRot(VoxelFox.Input.GetInput("c1s2").y*90,VoxelFox.Input.GetInput("c1s2").x*180,GetVar("rotz"))
---	if(VoxelFox.Input.GetInput("c1s1").x>GetVar("DeadZoneStick2") or VoxelFox.Input.GetInput("c1s1").x<-GetVar("DeadZoneStick2")) then
---		SetVar("posx",GetVar("posx")+(VoxelFox.Input.GetInput("c1s1").x*GetVar("Speed")))
---	end
---	if(VoxelFox.Input.GetInput("c1s1").y>GetVar("DeadZoneStick2") or VoxelFox.Input.GetInput("c1s1").y<-GetVar("DeadZoneStick2")) then
---		SetVar("posy",GetVar("posy")+(VoxelFox.Input.GetInput("c1s1").y*GetVar("Speed")))
---	end
-
---	VoxelFox.Window.GetCam(0).SetPos(-GetVar("posx"),GetVar("posy"),-GetVar("posz"))
-
---	if(VoxelFox.Input.GetInput("KeyBoard_E") or VoxelFox.Input.GetInput("c1BA")) then
---		print("Reloaded!")
---		VoxelFox.Window.LuaReload()
---	end
 end
-
-function UI()
-
-  end
 
 function Draw()
 	glColor(1,0,0)
@@ -69,12 +30,12 @@ function Draw()
 	VoxelFox.Kinect.UpdateSkeletons()
 	for i = 0, 5, 1 do
 		scalar = .2
-		if(i==0)then glColor(GetVar("P1Colr"),GetVar("P1Colg"),GetVar("P1Colb")) end;
-		if(i==1)then glColor(GetVar("P2Colr"),GetVar("P2Colg"),GetVar("P2Colb")) end;
-		if(i==2)then glColor(GetVar("P3Colr"),GetVar("P3Colg"),GetVar("P3Colb")) end;
-		if(i==3)then glColor(GetVar("P4Colr"),GetVar("P4Colg"),GetVar("P4Colb")) end;
-		if(i==4)then glColor(GetVar("P5Colr"),GetVar("P5Colg"),GetVar("P5Colb")) end;
-		if(i==5)then glColor(GetVar("P6Colr"),GetVar("P6Colg"),GetVar("P6Colb")) end;
+		if(i==0)then glColor(P1Color.x,P1Color.y,P1Color.z) end;
+		if(i==1)then glColor(P2Color.x,P2Color.y,P2Color.z) end;
+		if(i==2)then glColor(P3Color.x,P3Color.y,P3Color.z) end;
+		if(i==3)then glColor(P4Color.x,P4Color.y,P4Color.z) end;
+		if(i==4)then glColor(P5Color.x,P5Color.y,P5Color.z) end;
+		if(i==5)then glColor(P6Color.x,P6Color.y,P6Color.z) end;
 		--print(i);
 		glDrawCube(VoxelFox.Kinect.GetPerson(i).HandR().x*scalar,VoxelFox.Kinect.GetPerson(i).HandR().y*scalar,VoxelFox.Kinect.GetPerson(i).HandR().z*scalar,.01)
 		glDrawCube(VoxelFox.Kinect.GetPerson(i).HandL().x*scalar,VoxelFox.Kinect.GetPerson(i).HandL().y*scalar,VoxelFox.Kinect.GetPerson(i).HandL().z*scalar,.01)
@@ -107,3 +68,7 @@ function Draw()
 
 	--glDrawBezierCurve(12,4,VoxelFox.Math.Vec3(0,0,0),VoxelFox.Math.Vec3(0,1,0),VoxelFox.Math.Vec3(0,1,1),VoxelFox.Math.Vec3(0,0,1))
 end
+
+function UI()
+
+  end

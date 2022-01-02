@@ -27,8 +27,7 @@ public:
 
 class Lua {
 	lua_State* L;
-	
-
+	bool isAvailable = true;
 	void Pcall(int args, int rets){
 		if (lua_pcall(L, args, rets, 0) != 0) {
 			std::string s = lua_tostring(L, -1);
@@ -40,7 +39,24 @@ class Lua {
 			}
 		}
 	}
+
 public:
+	void WaitForAvailability() {
+		while (!isAvailable) {
+
+		}
+	}
+	void WaitForAvailabilityAndSetFalse() {
+		WaitForAvailability();
+		isAvailable = false;
+	}
+	bool IsAvalible() {
+		return isAvailable;
+	}
+	void SetAvailability(bool b) {
+		isAvailable=b;
+	}
+
 	std::map<std::string, int (*)(lua_State* L)> functs;
 	struct TableValue {
 		enum valType{E_boolean,E_number,E_string,E_function,E_table};
@@ -158,6 +174,7 @@ public:
 
 	void PrintTable(lua_State* L)
 	{
+		WaitForAvailabilityAndSetFalse();
 		lua_pushnil(L);
 
 		while (lua_next(L, -2) != 0)
@@ -170,10 +187,12 @@ public:
 			}
 			else if (lua_istable(L, -1)) {
 				printf("SubTable:");
+				SetAvailability(true);
 				PrintTable(L);
 			}
 			lua_pop(L, 1);
 		}
+		SetAvailability(true);
 	}
 
 
@@ -211,10 +230,12 @@ public:
 	}
 
 	void PushClass(std::string Name, LuaTableBuilder lc) {
+		WaitForAvailability();
 		SetGlobal(Name, lc.GetTable());
 	}
 
 	lua_State* GetState() {
+		WaitForAvailability();
 		return L;
 	}
 
@@ -250,28 +271,40 @@ public:
 	}
 
 	void SetGlobal(std::string Name, std::string val) {
+		WaitForAvailabilityAndSetFalse();
 		lua_pushstring(L, val.c_str());
 		lua_setglobal(L, Name.c_str());
+		SetAvailability(true);
 	}
 	void SetGlobal(std::string Name, int val) {
+		WaitForAvailabilityAndSetFalse();
 		lua_pushnumber(L, val);
 		lua_setglobal(L, Name.c_str());
+		SetAvailability(true);
 	}
 	void SetGlobal(std::string Name, double val) {
+		WaitForAvailabilityAndSetFalse();
 		lua_pushnumber(L, val);
 		lua_setglobal(L, Name.c_str());
+		SetAvailability(true);
 	}
 	void SetGlobal(std::string Name, bool val) {
+		WaitForAvailabilityAndSetFalse();
 		lua_pushboolean(L, val);
 		lua_setglobal(L, Name.c_str());
+		SetAvailability(true);
 	}
 	void SetGlobal(std::string Name, float val) {
+		WaitForAvailabilityAndSetFalse();
 		lua_pushnumber(L, val);
 		lua_setglobal(L, Name.c_str());
+		SetAvailability(true);
 	}
 	void SetGlobal(std::string Name, Table val) {
+		WaitForAvailabilityAndSetFalse();
 		lua_pushtable(L, val);
 		lua_setglobal(L, Name.c_str());
+		SetAvailability(true);
 	}
 	static void AddSubTable(lua_State * LUA, std::string Key, Table val) {
 		lua_pushstring(LUA, Key.c_str());
@@ -302,40 +335,51 @@ public:
 	}
 
 	void RegisterFunction(std::string Name, int (*funct)(lua_State* L)) {
+		WaitForAvailabilityAndSetFalse();
 		functs.insert(std::pair<std::string, int (*)(lua_State* L)>(Name, funct));
 		lua_register(L, Name.c_str(), funct);
+		SetAvailability(true);
 	}
 
 	double GetGlobalNumber(std::string Name) {
+		WaitForAvailabilityAndSetFalse();
 		lua_getglobal(L, Name.c_str());
 		int x = lua_tonumber(L, -1);
 		lua_pop(L, 1);
+		SetAvailability(true);
 		return x;
 	}
 
 	std::string GetGlobalString(std::string Name) {
+		WaitForAvailabilityAndSetFalse();
 		lua_getglobal(L, Name.c_str());
 		std::string x = lua_tostring(L, -1);
 		lua_pop(L, 1);
+		SetAvailability(true);
 		return x;
 	}
 	bool GetGlobalBool(std::string Name) {
+		WaitForAvailabilityAndSetFalse();
 		lua_getglobal(L, Name.c_str());
 		bool x = lua_toboolean(L, -1);
 		lua_pop(L, 1);
+		SetAvailability(true);
 		return x;
 	}
 	Table GetGlobalTable(std::string Name) {
+		WaitForAvailabilityAndSetFalse();
 		lua_getglobal(L, Name.c_str());
 		if (L == NULL || L == nullptr) {
 			throw Exception("L is null");
 		}
 		Table ret = lua_gettable(L,1);
 		lua_pop(L, 1);
+		SetAvailability(true);
 		return ret;
 	}
 
 	void CallLuaFunct(std::string Name,void(*ArgumentSetup)(lua_State* L)=nullptr,int args=0,void(*ReturnedDataHandler)(lua_State* L)=nullptr,int rets=0) {
+		WaitForAvailabilityAndSetFalse();
 		lua_getglobal(L, Name.c_str());
 		if (lua_isfunction(L, -1))
 		{
@@ -348,9 +392,11 @@ public:
 				ReturnedDataHandler(L);
 			}
 		}
+		SetAvailability(true);
 	}
 
 	void LoadScript(std::string Name) {
+		WaitForAvailabilityAndSetFalse();
 		if (luaL_loadfile(L, Name.c_str()) != 0) {
 			std::string s = lua_tostring(L, -1);
 			if (s.empty()) {
@@ -361,8 +407,10 @@ public:
 			}
 		}
 		Pcall(0, 0);
+		SetAvailability(true);
 	}
 	void RunScript(std::string Name) {
+		WaitForAvailabilityAndSetFalse();
 		if (luaL_dofile(L, Name.c_str()) != 0) {
 			std::string s = lua_tostring(L, -1);
 			if (s.empty()) {
@@ -372,8 +420,10 @@ public:
 				throw Exception(s);
 			}
 		}
+		SetAvailability(true);
 	}
 	void LoadString(std::string code) {
+		WaitForAvailabilityAndSetFalse();
 		if (luaL_loadstring(L, code.c_str()) != 0) {
 			std::string s = lua_tostring(L, -1);
 			if (s.empty()) {
@@ -384,8 +434,10 @@ public:
 			}
 		}
 		Pcall(0, 0);
+		SetAvailability(true);
 	}
 	void RunString(std::string code) {
+		WaitForAvailabilityAndSetFalse();
 		if (luaL_dostring(L, code.c_str()) != 0) {
 			std::string s = lua_tostring(L, -1);
 			if (s.empty()) {
@@ -395,6 +447,7 @@ public:
 				throw Exception(s);
 			}
 		}
+		SetAvailability(true);
 	}
 
 	~Lua() {
