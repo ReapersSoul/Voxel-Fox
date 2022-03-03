@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -88,14 +88,14 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>GLEW_STATIC;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>G:\Libraries\DevIL Windows SDK\include;G:\Libraries\openGLLibs\glm;G:\Libraries\openGLLibs\glew-2.1.0\include;G:\Projects\VOXELFOX\IMGUI;G:\Libraries\Kinect\v1.8\inc;..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>G:\Projects\VOXELFOX\include;G:\Libraries\Assimp\include;G:\Libraries\FBX\2020.0.1\include;G:\Libraries\DevIL Windows SDK\include;G:\Libraries\openGLLibs\glm;G:\Libraries\openGLLibs\glew-2.1.0\include;G:\Projects\VOXELFOX\IMGUI;G:\Libraries\Kinect\v1.8\inc;..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>G:\Libraries\DevIL Windows SDK\lib\x86\unicode\Release;G:\Libraries\openGLLibs\glew-2.1.0\lib\Release\Win32;G:\Libraries\Kinect\v1.8\lib\x86;..\lib</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Kinect10.lib;lua54.lib;opengl32.lib;glfw3.lib;glfw3dll.lib;glew32.lib;glu32.lib;DevIL.lib;ILU.lib;ILUT.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>G:\Libraries\Assimp\lib\x86;G:\Libraries\FBX\2020.0.1\lib\vs2017\x86\debug;G:\Libraries\DevIL Windows SDK\lib\x86\unicode\Release;G:\Libraries\openGLLibs\glew-2.1.0\lib\Release\Win32;G:\Libraries\Kinect\v1.8\lib\x86;..\lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Kinect10.lib;lua54.lib;opengl32.lib;glfw3.lib;glfw3dll.lib;glew32.lib;glu32.lib;DevIL.lib;ILU.lib;ILUT.lib;libfbxsdk.lib;assimp.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -106,7 +106,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>GLEW_STATIC;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>G:\Libraries\DevIL Windows SDK\include;G:\Libraries\openGLLibs\glm;G:\Libraries\openGLLibs\glew-2.1.0\include;G:\Projects\VOXELFOX\IMGUI;G:\Libraries\Kinect\v1.8\inc;..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>G:\Projects\VOXELFOX\include;G:\Libraries\Assimp\include;G:\Libraries\FBX\2020.0.1\include;G:\Libraries\DevIL Windows SDK\include;G:\Libraries\openGLLibs\glm;G:\Libraries\openGLLibs\glew-2.1.0\include;G:\Projects\VOXELFOX\IMGUI;G:\Libraries\Kinect\v1.8\inc;..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -114,8 +114,8 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>G:\Libraries\DevIL Windows SDK\lib\x86\unicode\Release;G:\Libraries\openGLLibs\glew-2.1.0\lib\Release\Win32;G:\Libraries\Kinect\v1.8\lib\x86;..\lib</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Kinect10.lib;lua54.lib;opengl32.lib;glfw3.lib;glfw3dll.lib;glew32.lib;glu32.lib;DevIL.lib;ILU.lib;ILUT.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>G:\Libraries\Assimp\lib\x86;G:\Libraries\FBX\2020.0.1\lib\vs2017\x86\release;G:\Libraries\DevIL Windows SDK\lib\x86\unicode\Release;G:\Libraries\openGLLibs\glew-2.1.0\lib\Release\Win32;G:\Libraries\Kinect\v1.8\lib\x86;..\lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Kinect10.lib;lua54.lib;opengl32.lib;glfw3.lib;glfw3dll.lib;glew32.lib;glu32.lib;DevIL.lib;ILU.lib;ILUT.lib;libfbxsdk.lib;assimp.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -124,7 +124,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>GLEW_STATIC;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Program Files\Microsoft SDKs\Kinect\v1.8\inc;..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>G:\Projects\VOXELFOX\include;C:\Program Files\Microsoft SDKs\Kinect\v1.8\inc;..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -141,7 +141,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>GLEW_STATIC;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Program Files\Microsoft SDKs\Kinect\v1.8\inc;..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>G:\Projects\VOXELFOX\include;C:\Program Files\Microsoft SDKs\Kinect\v1.8\inc;..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

@@ -129,13 +129,19 @@ void UI(Graphics::Window* window) {
 	if(ImGui::MenuItem("Show Camera")){
 		ShowCamera = !ShowCamera;
 	}
-	if (ImGui::MenuItem("Exit", "", new bool())) {
+	if (ImGui::MenuItem("Exit")) {
 		ShouldExit = true;
 	}
 	ImGui::EndMainMenuBar();
 	if (ShouldExit) {
 		std::exit(0);
 	}
+
+
+	if(ImGui::Begin("Mesh Control")){
+		
+	}
+	ImGui::End();
 
 	if (ShowMeshes) {
 		if (ImGui::Begin("Meshes")) {
@@ -169,17 +175,17 @@ void UI(Graphics::Window* window) {
 						pos[0] = it->second.getPos().x;
 						pos[1] = it->second.getPos().y;
 						pos[2] = it->second.getPos().z;
-						rot[0] = it->second.getRot().x;
-						rot[1] = it->second.getRot().y;
-						rot[2] = it->second.getRot().z;
+						rot[0] = degrees(it->second.getRot().x);
+						rot[1] = degrees(it->second.getRot().y);
+						rot[2] = degrees(it->second.getRot().z);
 						scl[0] = it->second.getScl().x;
 						scl[1] = it->second.getScl().y;
 						scl[2] = it->second.getScl().z;
-						ImGui::InputFloat3("Position", pos);
+						ImGui::DragFloat3("Position", pos,.01);
 						ImGui::TableNextColumn();
-						ImGui::InputFloat3("Rotation", rot);
+						ImGui::DragFloat3("Rotation", rot,.01);
 						ImGui::TableNextColumn();
-						ImGui::InputFloat3("Scale", scl);
+						ImGui::DragFloat3("Scale", scl,.01);
 						it->second.setPos(Math::Vec3<float>(pos[0], pos[1], pos[2]));
 						it->second.setRot(Math::Vec3<float>(Math::DegreeToRadians(rot[0]), Math::DegreeToRadians(rot[1]), Math::DegreeToRadians(rot[2])));
 						it->second.setScl(Math::Vec3<float>(scl[0], scl[1], scl[2]));
@@ -234,13 +240,13 @@ void UI(Graphics::Window* window) {
 						element->second.Color.z = texcolor[2];
 						element->second.Color.w = texcolor[3];
 						ImGui::TableNextColumn();
-						ImGui::Text(std::to_string(element->second.ColorMap.TexID).c_str());
+						ImGui::Text(std::to_string(VoxelFox::Graphics::Textures.find(element->second.ColorMap)->second.TexID).c_str());
 						ImGui::TableNextColumn();
-						ImGui::Text(element->second.ColorMap.Path.c_str());
+						ImGui::Text(VoxelFox::Graphics::Textures.find(element->second.ColorMap)->second.Path.c_str());
 						ImGui::TableNextColumn();
-						ImGui::Text(std::to_string(element->second.ColorMap.WrapingMode).c_str());
+						ImGui::Text(std::to_string(VoxelFox::Graphics::Textures.find(element->second.ColorMap)->second.WrapingMode).c_str());
 						ImGui::TableNextColumn();
-						ImGui::Text(std::to_string(element->second.ColorMap.Interpolation).c_str());
+						ImGui::Text(std::to_string(VoxelFox::Graphics::Textures.find(element->second.ColorMap)->second.Interpolation).c_str());
 						ImGui::TableNextColumn();
 					}
 					ImGui::EndTable();
@@ -261,11 +267,13 @@ void UI(Graphics::Window* window) {
 			Campos[0] = &window->GetCamera(window->GetSelectedCam())->GetPosPoint()->x;
 			Campos[1] = &window->GetCamera(window->GetSelectedCam())->GetPosPoint()->y;
 			Campos[2] = &window->GetCamera(window->GetSelectedCam())->GetPosPoint()->z;
-			ImGui::InputFloat3("Camera Rotation", CamRotation);
-			ImGui::InputFloat3("Camera Auto Rotation", CamAutoRotation);
+			ImGui::DragFloat3("Camera Rotation", CamRotation,.5, -360, 360);
+			//ImGui::InputFloat3("Camera Rotation", CamRotation);
+			ImGui::DragFloat3("Camera Auto Rotation", CamAutoRotation,.5, -360, 360);
+			//ImGui::InputFloat3("Camera Auto Rotation", CamAutoRotation);
 			ImGui::Checkbox("Auto Rotate", &autoRotate);
-			ImGui::InputFloat3("Cam Eye Pos", *CamEyePos);
-			ImGui::InputFloat3("Cam Pos", *Campos);
+			ImGui::DragFloat3("Cam Eye Pos", *CamEyePos,.01);
+			ImGui::DragFloat3("Cam Pos", *Campos,.01);
 		}
 		ImGui::End();
 	}

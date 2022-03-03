@@ -1,6 +1,11 @@
 #pragma once
 
 
+//assimp
+#include <assimp/Importer.hpp>      // C++ importer interface
+#include <assimp/scene.h>           // Output data structure
+#include <assimp/postprocess.h>     // Post processing flags
+
 // Include GLEW
 #include <GL/glew.h>
 // Include GLFW
@@ -34,6 +39,7 @@ using namespace glm;
 #include <IL/ilu.h>
 #include <IL/ilut.h>
 
+
 namespace VoxelFox {
 	wchar_t* GetWC(std::string c)
 	{
@@ -52,7 +58,7 @@ namespace VoxelFox {
 		}
 
 		float DegreeToRadians(float v) {
-			return v * M_PI / 180;
+			return v * M_PI / 180.0;
 		}
 
 		template<typename T>
@@ -1146,12 +1152,12 @@ namespace VoxelFox {
 
 		struct Material {
 			Math::Vec4<float> Color;
-			Texture ColorMap;
+			std::string ColorMap;
 		};
 
 		static std::map<std::string, Material> Materials;
 
-		void LoadMaterials(std::string path,std::string FileName) {
+		void LoadMTLMaterials(std::string path,std::string FileName) {
 			std::ifstream input(path + "/"+FileName);
 			std::string token;
 			std::string tmp;
@@ -1163,7 +1169,9 @@ namespace VoxelFox {
 					continue;
 				}
 				if (token == ""&&BuildingMat) {
-					Materials.insert(std::pair<std::string, Material>(MatName,Mat));
+					if (Materials.find(MatName) == Materials.end()) {
+						Materials.insert(std::pair<std::string, Material>(MatName, Mat));
+					}
 					BuildingMat = false;
 					Mat = Material();
 					MatName = "";
@@ -1189,7 +1197,10 @@ namespace VoxelFox {
 				}
 				if (Identifier == "map_Kd"&&BuildingMat) {
 						std::getline(TokenStream, tmp, ' ');
-						Mat.ColorMap = LoadTexture((path + "/"+tmp).c_str(), GL_CLAMP_TO_EDGE,GL_NEAREST);
+						if (Textures.find(tmp) == Textures.end()) {
+							Textures.insert(std::pair<std::string, Texture>(tmp, LoadTexture((path + "/" + tmp).c_str(), GL_CLAMP_TO_EDGE, GL_NEAREST)));
+						}
+						Mat.ColorMap = tmp;
 				}
 
 			}
@@ -1255,7 +1266,8 @@ namespace VoxelFox {
 					curve,
 					closedcurve,
 					loop,
-					loaded
+					loaded,
+					AssimpLoaded
 				};
 			protected:
 				Mode mode=tri;
@@ -1267,6 +1279,7 @@ namespace VoxelFox {
 				std::vector<std::string> MaterialIDs;
 				std::vector<Math::Vec2<float>> TextureCoords;
 				std::vector<Face> Faces;
+				std::vector<int> indecies;
 				Armature arm;
 			public:
 				Mesh() {
@@ -1275,6 +1288,9 @@ namespace VoxelFox {
 
 				std::vector<Math::Vec3<float>> * getData() {
 					return &data;
+				}
+				std::vector<int> * getIndecies() {
+					return &indecies;
 				}
 				std::vector<Math::Vec3<float>> * getNormals() {
 					return &normals;
@@ -1357,20 +1373,232 @@ namespace VoxelFox {
 
 			std::map<std::string, Mesh> Meshes;
 
+			class Model {
+				std::vector<std::string> meshes;
+			public:
+				std::vector<std::string>* GetMeshes() {
+					return &meshes;
+				}
+			};
+
+			std::map<std::string, Model> Models;
+
 			static class MeshLoader {
 
 			public:
-				static Mesh LoadFBX(std::string name) {
-				
-				}
-				static Mesh LoadDAE(std::string name) {
-				
+				static Mesh AssimpLoad(std::string pFile) {
+					Assimp::Importer importer;
+
+					std::ifstream fin(pFile.c_str());
+					if (!fin.fail()) {
+						fin.close();
+					}
+					else {
+						printf("Couldn't open file: %s\n", pFile.c_str());
+						printf("%s\n", importer.GetErrorString());
+						return Mesh();
+					}
+
+					
+
+					// And have it read the given file with some example postprocessing
+					// Usually - if speed is not the most important aspect for you - you'll
+					// probably to request more postprocessing than we do in this example.
+					const aiScene* scene = importer.ReadFile((pFile).c_str(),
+						aiProcess_CalcTangentSpace |
+						aiProcess_Triangulate |
+						aiProcess_JoinIdenticalVertices |
+						aiProcess_SortByPType);
+
+					// If the import failed, report it
+					if (scene==nullptr) {
+						std::string tmp = importer.GetErrorString();
+						std::cout<<"Failed ASSIMP Import: " << tmp << std::endl;
+						return Mesh();
+					}
+
+					std::vector<Mesh> _Meshes;
+
+					if (scene->HasMeshes()) {
+						for (int i = 0; i < scene->mNumMeshes; i++)
+						{
+							Mesh Ret;
+							if (scene->mMeshes[i]->HasPositions()) {
+								for (int j = 0; j < scene->mMeshes[i]->mNumVertices; j++)
+								{
+									Ret.getData()->push_back(Math::Vec3<float>(scene->mMeshes[i]->mVertices[j].x, scene->mMeshes[i]->mVertices[j].y, scene->mMeshes[i]->mVertices[j].z));
+									if (scene->mMeshes[i]->HasNormals()) {
+										Ret.getNormals()->push_back(Math::Vec3<float>(scene->mMeshes[i]->mNormals[j].x, scene->mMeshes[i]->mNormals[j].y, scene->mMeshes[i]->mNormals[j].z));
+									}
+									if (scene->mMeshes[i]->mTextureCoords[0])
+									{
+										Math::Vec2<float> vec;
+
+										vec.x = scene->mMeshes[i]->mTextureCoords[0][i].x;
+										vec.y = scene->mMeshes[i]->mTextureCoords[0][i].y;
+
+										Ret.getTextureCoords()->push_back(vec);
+									}
+								}
+							}
+
+							if (scene->mMeshes[i]->HasFaces()) {
+								for (int j = 0; j < scene->mMeshes[i]->mNumFaces; j++) {
+									Mesh::Face f;
+									f.face.clear();
+									for (int k = 0; k < scene->mMeshes[i]->mFaces[j].mNumIndices; k++) {
+										f.face.push_back(Math::Vec3<int>(scene->mMeshes[i]->mFaces[j].mIndices[k],0,0));
+									}
+									Ret.getFaces()->push_back(f);
+								}
+							}
+							
+							_Meshes.push_back(Ret);
+						}
+					}
+					return _Meshes[0];
+					/*if (scene->HasTextures()) {
+						for (int i = 0; i < scene->mNumTextures; i++)
+						{
+							scene->mTextures[i]
+						}
+					}
+					if (scene->HasMaterials()) {
+
+					}
+					
+					if (scene->HasAnimations()) {
+
+					}*/
+
 				}
 
-				static Mesh LoadOBJ(std::string path,std::string name) {
-					//std::vector<Mesh> retVec;
+				struct tag {
+					tag() {
+						name = "";
+					}
+					tag(tag * _Parent,std::string _name) {
+						name = _name;
+						Parent = _Parent;
+					}
+					void AddSubTag(tag* t) {
+						t->Parent = this;
+						subtag.push_back(t);
+					}
+
+					std::vector<tag*> GetTagsOfName(std::string name) {
+						std::vector<tag*> ret;
+						for (int i = 0; i < subtag.size(); i++)
+						{
+							if (subtag[i]->name == name) {
+								ret.push_back(subtag[i]);
+							}
+						}
+						return ret;
+					}
+					tag* GetFirstTagOfName(std::string name) {
+						for (int i = 0; i < subtag.size(); i++)
+						{
+							if (subtag[i]->name == name) {
+								return subtag[i];
+							}
+						}
+						return nullptr;
+					}
+
+					tag* Parent;
+					bool HasContent = false;
+					bool HasSubTags = false;
+					bool HasData = false;
+					std::string name;
+					std::string content;
+					std::map<std::string, std::string> data;
+					std::vector<tag*> subtag;
+					
+				};
+				static Mesh LoadFOX(std::string path, std::string name) {
+				
+				}
+				static void writestr(std::string str,std::ofstream * out) {
+					out->write(str.c_str(), str.size());
+				}
+
+				static void ExportFOX(Mesh mesh, std::string path, std::string name) {
+					std::ofstream out(path + "/" + name);
+
+					writestr("v:{", &out);
+					for (int i = 0; i < mesh.getDrawableData().size(); i++)
+					{
+						writestr("("+std::to_string(mesh.getDrawableData()[i].x) + ","+std::to_string(mesh.getDrawableData()[i].y) + ","+std::to_string(mesh.getDrawableData()[i].z), &out);
+						if (i != (mesh.getDrawableData().size() - 1)) {
+							writestr("),", &out);
+						}
+						else {
+							writestr(")", &out);
+						}
+					}
+					writestr("}", &out);
+
+					writestr("vn:{", &out);
+					for (int i = 0; i < mesh.getDrawableNormals().size(); i++)
+					{
+						writestr("("+std::to_string(mesh.getDrawableNormals()[i].x) + ","+std::to_string(mesh.getDrawableNormals()[i].y) + ","+std::to_string(mesh.getDrawableNormals()[i].z), &out);
+						if (i != (mesh.getDrawableNormals().size() - 1)) {
+							writestr("),", &out);
+						}
+						else {
+							writestr(")", &out);
+						}
+					}
+					writestr("}", &out);
+
+					/*writestr("f:{", &out);
+					for (int i = 0; i < mesh.getDrawableFaces().size(); i++)
+					{
+						writestr("("+std::to_string(mesh.getDrawableNormals()[i].x) + ","+std::to_string(mesh.getDrawableNormals()[i].y) + ","+std::to_string(mesh.getDrawableNormals()[i].z), &out);
+						if (i != (mesh.getDrawableNormals().size() - 1)) {
+							writestr("),", &out);
+						}
+						else {
+							writestr(")", &out);
+						}
+					}
+					writestr("}", &out);*/
+				}
+				static Mesh LoadFBX(std::string path, std::string name) {
+				
+				}
+				static tag GetTags(std::string path, std::string name) {
+					std::ifstream infile(path + "/" + name);
+					if (!infile.is_open()) {
+						std::cout << "Couldnt find Dae to load: " << path + "/" + name << std::endl;
+					}
+				}
+				static void ExploreTags(Mesh* mesh,tag * data) {
+					std::vector<tag*> images = data->GetFirstTagOfName("library_images")->GetTagsOfName("image");
+					for (int i = 0; i < images.size(); i++)
+					{
+						Textures.insert(std::pair<std::string, Texture>(images[i]->data.find("name")->second, LoadTexture(images[i]->GetFirstTagOfName("init_from")->content, GL_CLAMP_TO_EDGE, GL_NEAREST)));
+					}
+
+
+				}
+				static Mesh LoadDAE(std::string path, std::string name) {
 					Mesh ret;
+					ret.setMode(Mesh::loaded);
+					tag data = GetTags(path, name);
+
+					
+					
+				}
+
+				static Model LoadOBJ(std::string path,std::string name) {
+					Model model;
+					Mesh ret;
+					std::string mesh_name;
 					ret.setMode(Graphics::Geometry::Mesh::loaded);
+
+					bool hadSeprateOBJ = false;
 
 					std::ifstream infile(path+"/"+ name);
 					if (!infile.is_open()) {
@@ -1384,10 +1612,16 @@ namespace VoxelFox {
 						std::getline(lineStream, token,' ');
 						if (token == "mtllib") {
 							std::getline(lineStream, token, ' ');
-							LoadMaterials(path,token);
+							LoadMTLMaterials(path,token);
 						}
-						if (token == "o") {
-							continue;
+						if (token == "g") {
+							//hadSeprateOBJ = true;
+							/*std::getline(lineStream, token, ' ');
+							mesh_name = token;
+							Meshes.insert(std::pair<std::string, Mesh>(token, ret));
+							ret = Mesh();
+							model.GetMeshes()->push_back(token);
+							continue;*/
 						}
 						if (token == "usemtl") {
 							std::getline(lineStream, token, ' ');
@@ -1437,14 +1671,22 @@ namespace VoxelFox {
 							ret.getFaces()->push_back(face);
 						}
 					}
-					return ret;
+					if (!hadSeprateOBJ) {
+						Meshes.insert(std::pair<std::string, Mesh>(name, ret));
+						ret = Mesh();
+						model.GetMeshes()->push_back(name);
+					}
+					return model;
 				}
 			};
 
 			void LoadMeshesFromDir(std::string path) {
-				for (auto const& dir_entry : std::filesystem::directory_iterator{ std::filesystem::path{path} }) {
+				for (std::filesystem::directory_entry dir_entry : std::filesystem::directory_iterator{ std::filesystem::path{path} }) {
 					if (dir_entry.path().extension() == ".obj") {
-						Meshes.insert(std::pair<std::string, Mesh>(dir_entry.path().filename().string(), MeshLoader::LoadOBJ(path, dir_entry.path().filename().string())));
+						Models.insert(std::pair<std::string, Model>(dir_entry.path().filename().string(), MeshLoader::LoadOBJ(dir_entry.path().parent_path().string(), dir_entry.path().filename().string())));
+					}
+					else if(dir_entry.path().extension() != ".mtl" && !dir_entry.is_directory()) {
+						Meshes.insert(std::pair<std::string, Mesh>(dir_entry.path().filename().string(), MeshLoader::AssimpLoad(dir_entry.path().string())));
 					}
 				}
 			}
@@ -2034,7 +2276,7 @@ namespace VoxelFox {
 			Math::Vec3<float> GetAppliedEyePos() {
 				Math::Vec3<float> ret = EyePos;
 				ret.Rotate(Rot);
-				return ret;
+				return ret+Pos;
 			}
 
 			Math::Vec3<float> GetEyePos(){
@@ -2328,7 +2570,10 @@ namespace VoxelFox {
 								it = Materials.find(m.getDrawableMatIDS()[Faces[i].Tex]);
 								if (it != Materials.end()) {
 									glColor4f(it->second.Color.x, it->second.Color.y, it->second.Color.z, it->second.Color.w);
-									BindTexture(it->second.ColorMap);
+									std::map<std::string, Texture>::iterator texture = Textures.find(it->second.ColorMap);
+									if (texture != Textures.end()) {
+										BindTexture(texture->second);
+									}
 								}
 							}
 							if (Faces[i].face.size() == 3) {
