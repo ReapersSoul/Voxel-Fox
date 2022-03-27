@@ -21,6 +21,8 @@ Lua luaVM;
 
 Graphics::Window window;
 
+VoxelFox::ScriptLoader sl;
+
 //Lua::Table vars;
 
 float* CamEyePos[3];
@@ -41,6 +43,8 @@ void Setup(Graphics::Window* window) {
 	ImGui_ImplOpenGL3_Init();
 	// Setup Dear ImGui style
 	ImGui::StyleColorsDark();
+	sl.Init();
+	sl.LoadAllScripts();
 
 	window->GetCamera(window->GetSelectedCam())->SetEyePos(Math::Vec3<float>(0, 0, 1));
 
@@ -81,6 +85,14 @@ void Update(Graphics::Window* window) {
 	LastCamRotation[0] = CamRotation[0];
 	LastCamRotation[1] = CamRotation[1];
 	LastCamRotation[2] = CamRotation[2];
+
+	try {
+		//luaVM.CallLuaFunct("Update");
+		sl.Update(window);
+	}
+	catch (Exception e) {
+		std::cout << e.what() << std::endl;
+	}
 }
 
 float tiltang = 0;
@@ -91,6 +103,7 @@ void Draw(Graphics::Window* window) {
 	glColor3f(1, 1, 1);
 	try {
 		luaVM.CallLuaFunct("Draw");
+		sl.Draw(window);
 	}
 	catch (Exception e) {
 		std::cout << e.what() << std::endl;
@@ -136,12 +149,6 @@ void UI(Graphics::Window* window) {
 	if (ShouldExit) {
 		std::exit(0);
 	}
-
-
-	if(ImGui::Begin("Mesh Control")){
-		
-	}
-	ImGui::End();
 
 	if (ShowMeshes) {
 		if (ImGui::Begin("Meshes")) {
@@ -304,6 +311,7 @@ void UI(Graphics::Window* window) {
 
 	try {
 		luaVM.CallLuaFunct("UI");
+		sl.UI(window);
 	}
 	catch (Exception e) {
 		std::cout << e.what() << std::endl;
@@ -314,6 +322,13 @@ void UI(Graphics::Window* window) {
 }
 
 void FinalF(Graphics::Window* window) {
+	try {
+		luaVM.CallLuaFunct("FinalF");
+		sl.Final(window);
+	}
+	catch (Exception e) {
+		std::cout << e.what() << std::endl;
+	}
 }
 
 

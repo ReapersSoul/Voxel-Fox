@@ -39,8 +39,193 @@ using namespace glm;
 #include <IL/ilu.h>
 #include <IL/ilut.h>
 
+namespace fs = std::filesystem;
 
 namespace VoxelFox {
+
+	namespace Graphics{
+		class Window;
+	}
+
+	class Script {
+		typedef void (*funct)(void*, Graphics::Window*);
+	public:
+		Script() {
+		}
+		Script(std::string FileName) {
+			loadLib(FileName);
+		}
+
+		void setObj(void* _obj) {
+			obj = _obj;
+		}
+
+		bool loadLib(std::string dir) {
+			HINSTANCE hGetProcIDDLL = LoadLibrary((LPWSTR)std::wstring(dir.begin(), dir.end()).c_str());
+
+			if (!hGetProcIDDLL) {
+				std::cout << "could not load the dynamic library" << std::endl;
+				return false;
+			}
+
+			// resolve function address here
+			funct _Setup = (funct)GetProcAddress(hGetProcIDDLL, "Setup");
+			if (!_Setup) {
+				std::cout << "could not locate the Setup function" << std::endl;
+				return false;
+			}
+			Setupf = _Setup;
+
+			// resolve function address here
+			funct _Update = (funct)GetProcAddress(hGetProcIDDLL, "Update");
+			if (!_Update) {
+				std::cout << "could not locate the Update function" << std::endl;
+				return false;
+			}
+			Updatef = _Update;
+
+			// resolve function address here
+			funct _Draw = (funct)GetProcAddress(hGetProcIDDLL, "Draw");
+			if (!_Draw) {
+				std::cout << "could not locate the Draw function" << std::endl;
+				return false;
+			}
+			Drawf = _Draw;
+
+			// resolve function address here
+			funct _UI = (funct)GetProcAddress(hGetProcIDDLL, "UI");
+			if (!_UI) {
+				std::cout << "could not locate the UI function" << std::endl;
+				return false;
+			}
+			UIf = _UI;
+
+			// resolve function address here
+			funct _Final = (funct)GetProcAddress(hGetProcIDDLL, "Final");
+			if (!_Final) {
+				std::cout << "could not locate the Final function" << std::endl;
+				return false;
+			}
+			Finalf = _Final;
+			return true;
+		}
+
+		void Setup(Graphics::Window * wind) {
+			Setupf(obj,wind);
+		}
+		void Update(Graphics::Window* wind) {
+			Updatef(obj, wind);
+		}
+		void Draw(Graphics::Window* wind) {
+			Drawf(obj, wind);
+		}
+		void UI(Graphics::Window* wind) {
+			UIf(obj, wind);
+		}
+		void Final(Graphics::Window* wind) {
+			Finalf(obj, wind);
+		}
+
+	protected:
+		void* obj;
+		funct Setupf;
+		funct Updatef;
+		funct Drawf;
+		funct UIf;
+		funct Finalf;
+	};
+	
+	class ScriptLoader {
+	public:
+		void Init() {
+			if (!fs::exists("./Scripts/")) {
+				fs::create_directory("./Scripts/");
+				printf("Created Script Directory!\n");
+			}
+			printf("Script Directory Already Exists!\n");
+		}
+		void LoadAllScripts() {
+			bool wasScripts = false;
+			for (auto const& dir_entry : fs::directory_iterator{ "./Scripts/" })
+			{
+				if (!dir_entry.is_directory() && dir_entry.path().extension() == ".dll") {
+					wasScripts = true;
+
+					if (Scripts.find(dir_entry.path().filename().string()) != Scripts.end()) {
+						printf("Script \"%s\" already Exists!\n", dir_entry.path().filename().string().c_str());
+						continue;
+					}
+					Script _Script;
+					if (_Script.loadLib(dir_entry.path().string())) {
+						std::cout << "Loaded Script: " << dir_entry.path().filename() << '\n';
+						Scripts.insert(std::pair<std::string, Script>(dir_entry.path().filename().string(), _Script));
+					}
+					else {
+						printf("Failed to load Script: %s\n", dir_entry.path().string().c_str());
+					}
+				}
+			}
+			if (!wasScripts)
+			{
+				printf("No Scripts To Load\n");
+			}
+		}
+		void ReLoadAllScripts() {
+			Scripts.clear();
+			LoadAllScripts();
+		}
+		void LoadScript(fs::path path) {
+			Scripts.insert(std::pair<std::string, Script>(path.filename().string(), Script("./Scripts/" + path.string())));
+		}
+		void ReLoadScript(fs::path path) {
+			Scripts.erase(Scripts.find(path.filename().string()));
+			LoadScript(path);
+		}
+		Script GetScript(std::string Name) {
+			return Scripts.find(Name)->second;
+		}
+		std::vector<std::string> GetScriptNames() {
+			std::vector<std::string> ret;
+			for (std::map<std::string, Script>::iterator it = Scripts.begin(); it != Scripts.end(); it++) {
+				ret.push_back(it->first);
+			}
+			return ret;
+		}
+
+		void Setup(Graphics::Window * wind) {
+			for (std::map<std::string, Script>::iterator kv = Scripts.begin(); kv != Scripts.end();kv++) {
+				kv->second.Setup(wind);
+			}
+		}
+
+		void Update(Graphics::Window* wind) {
+			for (std::map<std::string, Script>::iterator kv = Scripts.begin(); kv != Scripts.end(); kv++) {
+				kv->second.Update(wind);
+			}
+		}
+
+		void Draw(Graphics::Window* wind) {
+			for (std::map<std::string, Script>::iterator kv = Scripts.begin(); kv != Scripts.end(); kv++) {
+				kv->second.Draw(wind);
+			}
+		}
+
+		void UI(Graphics::Window* wind) {
+			for (std::map<std::string, Script>::iterator kv = Scripts.begin(); kv != Scripts.end(); kv++) {
+				kv->second.UI(wind);
+			}
+		}
+
+		void Final(Graphics::Window* wind) {
+			for (std::map<std::string, Script>::iterator kv = Scripts.begin(); kv != Scripts.end(); kv++) {
+				kv->second.Final(wind);
+			}
+		}
+
+	private:
+		std::map<std::string, Script> Scripts;
+	};
+
 	wchar_t* GetWC(std::string c)
 	{
 		size_t newsize = strlen(c.c_str()) + 1;

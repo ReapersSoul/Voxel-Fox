@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -21,32 +21,32 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{43e64036-84df-4c13-b7f7-9e2b791e07c5}</ProjectGuid>
-    <RootNamespace>VOXELFOX</RootNamespace>
+    <ProjectGuid>{289c1719-2d8f-4b8e-b5eb-16d498b70206}</ProjectGuid>
+    <RootNamespace>VoxelfoxScript</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -86,16 +86,19 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>GLEW_STATIC;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;VOXELFOXSCRIPT_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>G:\Projects\VOXELFOX\include;G:\Libraries\Assimp\include;G:\Libraries\FBX\2020.0.1\include;G:\Libraries\DevIL Windows SDK\include;G:\Libraries\openGLLibs\glm;G:\Libraries\openGLLibs\glew-2.1.0\include;G:\Projects\VOXELFOX\IMGUI;G:\Libraries\Kinect\v1.8\inc;..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
+      <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>G:\Libraries\Assimp\lib\x86;G:\Libraries\FBX\2020.0.1\lib\vs2017\x86\debug;G:\Libraries\DevIL Windows SDK\lib\x86\unicode\Release;G:\Libraries\openGLLibs\glew-2.1.0\lib\Release\Win32;G:\Libraries\Kinect\v1.8\lib\x86;..\lib</AdditionalLibraryDirectories>
+      <EnableUAC>false</EnableUAC>
       <AdditionalDependencies>Kinect10.lib;lua54.lib;opengl32.lib;glfw3.lib;glfw3dll.lib;glew32.lib;glu32.lib;DevIL.lib;ILU.lib;ILUT.lib;libfbxsdk.lib;assimp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>G:\Libraries\Assimp\lib\x86;G:\Libraries\FBX\2020.0.1\lib\vs2017\x86\debug;G:\Libraries\DevIL Windows SDK\lib\x86\unicode\Release;G:\Libraries\openGLLibs\glew-2.1.0\lib\Release\Win32;G:\Libraries\Kinect\v1.8\lib\x86;..\lib</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -104,32 +107,38 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>GLEW_STATIC;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;VOXELFOXSCRIPT_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>G:\Projects\VOXELFOX\include;G:\Libraries\Assimp\include;G:\Libraries\FBX\2020.0.1\include;G:\Libraries\DevIL Windows SDK\include;G:\Libraries\openGLLibs\glm;G:\Libraries\openGLLibs\glew-2.1.0\include;G:\Projects\VOXELFOX\IMGUI;G:\Libraries\Kinect\v1.8\inc;..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
+      <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>G:\Libraries\Assimp\lib\x86;G:\Libraries\FBX\2020.0.1\lib\vs2017\x86\release;G:\Libraries\DevIL Windows SDK\lib\x86\unicode\Release;G:\Libraries\openGLLibs\glew-2.1.0\lib\Release\Win32;G:\Libraries\Kinect\v1.8\lib\x86;..\lib</AdditionalLibraryDirectories>
+      <EnableUAC>false</EnableUAC>
       <AdditionalDependencies>Kinect10.lib;lua54.lib;opengl32.lib;glfw3.lib;glfw3dll.lib;glew32.lib;glu32.lib;DevIL.lib;ILU.lib;ILUT.lib;libfbxsdk.lib;assimp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>G:\Libraries\Assimp\lib\x86;G:\Libraries\FBX\2020.0.1\lib\vs2017\x86\release;G:\Libraries\DevIL Windows SDK\lib\x86\unicode\Release;G:\Libraries\openGLLibs\glew-2.1.0\lib\Release\Win32;G:\Libraries\Kinect\v1.8\lib\x86;..\lib</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>GLEW_STATIC;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;VOXELFOXSCRIPT_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>G:\Projects\VOXELFOX\include;G:\Libraries\Assimp\include;G:\Libraries\FBX\2020.0.1\include;G:\Libraries\DevIL Windows SDK\include;G:\Libraries\openGLLibs\glm;G:\Libraries\openGLLibs\glew-2.1.0\include;G:\Projects\VOXELFOX\IMGUI;G:\Libraries\Kinect\v1.8\inc;..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
+      <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
       <AdditionalLibraryDirectories>G:\Libraries\Assimp\lib\x64;G:\Libraries\FBX\2020.0.1\lib\vs2017\x64\debug;G:\Libraries\DevIL Windows SDK\lib\x64\unicode\Release;G:\Libraries\openGLLibs\glew-2.1.0\lib\Release\x64;G:\Libraries\Kinect\v1.8\lib\x86;..\lib</AdditionalLibraryDirectories>
       <AdditionalDependencies>Kinect10.lib;lua54.lib;opengl32.lib;glfw3.lib;glfw3dll.lib;glew32.lib;glu32.lib;DevIL.lib;ILU.lib;ILUT.lib;libfbxsdk.lib;assimp.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
@@ -140,31 +149,23 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>GLEW_STATIC;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;VOXELFOXSCRIPT_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>G:\Projects\VOXELFOX\include;G:\Libraries\Assimp\include;G:\Libraries\FBX\2020.0.1\include;G:\Libraries\DevIL Windows SDK\include;G:\Libraries\openGLLibs\glm;G:\Libraries\openGLLibs\glew-2.1.0\include;G:\Projects\VOXELFOX\IMGUI;G:\Libraries\Kinect\v1.8\inc;..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
+      <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
       <AdditionalLibraryDirectories>G:\Libraries\Assimp\lib\x64;G:\Libraries\FBX\2020.0.1\lib\vs2017\x64\release;G:\Libraries\DevIL Windows SDK\lib\x64\unicode\Release;G:\Libraries\openGLLibs\glew-2.1.0\lib\Release\x64;G:\Libraries\Kinect\v1.8\lib\x64;..\lib</AdditionalLibraryDirectories>
       <AdditionalDependencies>Kinect10.lib;lua54.lib;opengl32.lib;glfw3.lib;glfw3dll.lib;glew32.lib;glu32.lib;DevIL.lib;ILU.lib;ILUT.lib;libfbxsdk.lib;assimp.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="..\IMGUI\imgui.cpp" />
-    <ClCompile Include="..\IMGUI\imgui_demo.cpp" />
-    <ClCompile Include="..\IMGUI\imgui_draw.cpp" />
-    <ClCompile Include="..\IMGUI\imgui_impl_glfw.cpp" />
-    <ClCompile Include="..\IMGUI\imgui_impl_opengl3.cpp" />
-    <ClCompile Include="..\IMGUI\imgui_stdlib.cpp" />
-    <ClCompile Include="..\IMGUI\imgui_tables.cpp" />
-    <ClCompile Include="..\IMGUI\imgui_widgets.cpp" />
-    <ClCompile Include="VOXELFOX.cpp" />
-  </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\IMGUI\imconfig.h" />
     <ClInclude Include="..\IMGUI\imgui.h" />
@@ -176,12 +177,20 @@
     <ClInclude Include="..\IMGUI\imstb_rectpack.h" />
     <ClInclude Include="..\IMGUI\imstb_textedit.h" />
     <ClInclude Include="..\IMGUI\imstb_truetype.h" />
-    <ClInclude Include="Lua.h" />
-    <ClInclude Include="VoxelFox.h" />
+    <ClInclude Include="..\VOXELFOX\Lua.h" />
+    <ClInclude Include="..\VOXELFOX\VoxelFox.h" />
+    <ClInclude Include="Voxelfox_Script.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="classes.lua" />
-    <None Include="main.lua" />
+    <ClCompile Include="..\IMGUI\imgui.cpp" />
+    <ClCompile Include="..\IMGUI\imgui_demo.cpp" />
+    <ClCompile Include="..\IMGUI\imgui_draw.cpp" />
+    <ClCompile Include="..\IMGUI\imgui_impl_glfw.cpp" />
+    <ClCompile Include="..\IMGUI\imgui_impl_opengl3.cpp" />
+    <ClCompile Include="..\IMGUI\imgui_stdlib.cpp" />
+    <ClCompile Include="..\IMGUI\imgui_tables.cpp" />
+    <ClCompile Include="..\IMGUI\imgui_widgets.cpp" />
+    <ClCompile Include="Voxelfox_Script.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
