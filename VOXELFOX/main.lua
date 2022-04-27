@@ -25,12 +25,31 @@ sizeTwo=.02
 sizeThree=.03
 
 function Draw()
-	glColor(1,0,0)
-	glDrawLine(1,0,0,-1,0,0,4)
-	glColor(0,1,0)
-	glDrawLine(0,1,0,0,-1,0,4)
-	glColor(0,0,1)
-	glDrawLine(0,0,1,0,0,-1,4)
+
+	if(VoxelFox.Input.GetInput("c1BB")) then
+		VoxelFox.Window.GetCam().SetRot(VoxelFox.Math.DegreeToRadian(VoxelFox.Input.GetInput("c1s1").y),0,VoxelFox.Math.DegreeToRadian(VoxelFox.Input.GetInput("c1s1").x));
+	end
+	if(VoxelFox.Input.GetInput("c1BX")) then
+		VoxelFox.Window.GetCam().SetRot(VoxelFox.Math.DegreeToRadian(-VoxelFox.Input.GetInput("c1s1").y),0,VoxelFox.Math.DegreeToRadian(-VoxelFox.Input.GetInput("c1s1").x));
+	end
+	if(VoxelFox.Input.GetInput("c1BA")) then
+		glColor(VoxelFox.Math.MapRange(8,0,255,0,1), VoxelFox.Math.MapRange(164,0,255,0,1), VoxelFox.Math.MapRange(177,0,255,0,1))
+		glDrawLine(1,0,0,-1,0,0,4)
+		glColor(VoxelFox.Math.MapRange(231,0,255,0,1), VoxelFox.Math.MapRange(214,0,255,0,1),VoxelFox.Math.MapRange( 20,0,255,0,1))
+		glDrawLine(0,1,0,0,-1,0,4)
+		glColor(VoxelFox.Math.MapRange(239,0,255,0,1), VoxelFox.Math.MapRange(81,0,255,0,1), VoxelFox.Math.MapRange(127,0,255,0,1))
+		glDrawLine(0,0,1,0,0,-1,4)
+	else
+		glColor(1,0,0)
+		glDrawLine(1,0,0,-1,0,0,4)
+		glColor(0,1,0)
+		glDrawLine(0,1,0,0,-1,0,4)
+		glColor(0,0,1)
+		glDrawLine(0,0,1,0,0,-1,4)
+	end
+	
+	
+
 	VoxelFox.Kinect.UpdateSkeletons()
 	for i = 0, 5, 1 do
 		scalar = .2
@@ -41,36 +60,30 @@ function Draw()
 		if(i==4)then glColor(P5Color.x,P5Color.y,P5Color.z) end;
 		if(i==5)then glColor(P6Color.x,P6Color.y,P6Color.z) end;
 		--print(i);
-		glDrawCube((VoxelFox.Kinect.GetPerson(i).HandR().x*scalar)-(sizeOne/2),(VoxelFox.Kinect.GetPerson(i).HandR().y*scalar)-(sizeOne/2),(VoxelFox.Kinect.GetPerson(i).HandR().z*scalar)-(sizeOne/2),sizeOne)
-		glDrawCube((VoxelFox.Kinect.GetPerson(i).HandL().x*scalar)-(sizeOne/2),(VoxelFox.Kinect.GetPerson(i).HandL().y*scalar)-(sizeOne/2),(VoxelFox.Kinect.GetPerson(i).HandL().z*scalar)-(sizeOne/2),sizeOne)
-		glDrawCube((VoxelFox.Kinect.GetPerson(i).WristR().x*scalar)-(sizeOne/2),(VoxelFox.Kinect.GetPerson(i).WristR().y*scalar)-(sizeOne/2),(VoxelFox.Kinect.GetPerson(i).WristR().z*scalar)-(sizeOne/2),sizeOne)
-		glDrawCube((VoxelFox.Kinect.GetPerson(i).WristL().x*scalar)-(sizeOne/2),(VoxelFox.Kinect.GetPerson(i).WristL().y*scalar)-(sizeOne/2),(VoxelFox.Kinect.GetPerson(i).WristL().z*scalar)-(sizeOne/2),sizeOne)
-		glDrawCube((VoxelFox.Kinect.GetPerson(i).ElbowR().x*scalar)-(sizeOne/2),(VoxelFox.Kinect.GetPerson(i).ElbowR().y*scalar)-(sizeOne/2),(VoxelFox.Kinect.GetPerson(i).ElbowR().z*scalar)-(sizeOne/2),sizeOne)
-		glDrawCube((VoxelFox.Kinect.GetPerson(i).ElbowL().x*scalar)-(sizeOne/2),(VoxelFox.Kinect.GetPerson(i).ElbowL().y*scalar)-(sizeOne/2),(VoxelFox.Kinect.GetPerson(i).ElbowL().z*scalar)-(sizeOne/2),sizeOne)
-		glDrawCube((VoxelFox.Kinect.GetPerson(i).ShoulderR().x*scalar)-(sizeOne/2),(VoxelFox.Kinect.GetPerson(i).ShoulderR().y*scalar)-(sizeOne/2),(VoxelFox.Kinect.GetPerson(i).ShoulderR().z*scalar)-(sizeOne/2),sizeOne)
-		glDrawCube((VoxelFox.Kinect.GetPerson(i).ShoulderL().x*scalar)-(sizeOne/2),(VoxelFox.Kinect.GetPerson(i).ShoulderL().y*scalar)-(sizeOne/2),(VoxelFox.Kinect.GetPerson(i).ShoulderL().z*scalar)-(sizeOne/2),sizeOne)
-		glDrawCube((VoxelFox.Kinect.GetPerson(i).ShoulderC().x*scalar)-(sizeOne/2),(VoxelFox.Kinect.GetPerson(i).ShoulderC().y*scalar)-(sizeOne/2),(VoxelFox.Kinect.GetPerson(i).ShoulderC().z*scalar)-(sizeOne/2),sizeOne)
-		glDrawCube((VoxelFox.Kinect.GetPerson(i).Head().x*scalar)-(sizeThree/2),(VoxelFox.Kinect.GetPerson(i).Head().y*scalar)-(sizeThree/2),(VoxelFox.Kinect.GetPerson(i).Head().z*scalar)-(sizeThree/2),sizeThree)
-		glDrawCube((VoxelFox.Kinect.GetPerson(i).Spine().x*scalar)-(sizeTwo/2),(VoxelFox.Kinect.GetPerson(i).Spine().y*scalar)-(sizeTwo/2),(VoxelFox.Kinect.GetPerson(i).Spine().z*scalar)-(sizeTwo/2),sizeTwo)
-		glDrawCube((VoxelFox.Kinect.GetPerson(i).HipC().x*scalar)-(sizeOne/2),(VoxelFox.Kinect.GetPerson(i).HipC().y*scalar)-(sizeOne/2),(VoxelFox.Kinect.GetPerson(i).HipC().z*scalar)-(sizeOne/2),sizeOne)
-		glDrawCube((VoxelFox.Kinect.GetPerson(i).HipL().x*scalar)-(sizeOne/2),(VoxelFox.Kinect.GetPerson(i).HipL().y*scalar)-(sizeOne/2),(VoxelFox.Kinect.GetPerson(i).HipL().z*scalar)-(sizeOne/2),sizeOne)
-		glDrawCube((VoxelFox.Kinect.GetPerson(i).HipR().x*scalar)-(sizeOne/2),(VoxelFox.Kinect.GetPerson(i).HipR().y*scalar)-(sizeOne/2),(VoxelFox.Kinect.GetPerson(i).HipR().z*scalar)-(sizeOne/2),sizeOne)
-		glDrawCube((VoxelFox.Kinect.GetPerson(i).KneeL().x*scalar)-(sizeOne/2),(VoxelFox.Kinect.GetPerson(i).KneeL().y*scalar)-(sizeOne/2),(VoxelFox.Kinect.GetPerson(i).KneeL().z*scalar)-(sizeOne/2),sizeOne)
-		glDrawCube((VoxelFox.Kinect.GetPerson(i).KneeR().x*scalar)-(sizeOne/2),(VoxelFox.Kinect.GetPerson(i).KneeR().y*scalar)-(sizeOne/2),(VoxelFox.Kinect.GetPerson(i).KneeR().z*scalar)-(sizeOne/2),sizeOne)
-		glDrawCube((VoxelFox.Kinect.GetPerson(i).AnkleL().x*scalar)-(sizeOne/2),(VoxelFox.Kinect.GetPerson(i).AnkleL().y*scalar)-(sizeOne/2),(VoxelFox.Kinect.GetPerson(i).AnkleL().z*scalar)-(sizeOne/2),sizeOne)
-		glDrawCube((VoxelFox.Kinect.GetPerson(i).AnkleR().x*scalar)-(sizeOne/2),(VoxelFox.Kinect.GetPerson(i).AnkleR().y*scalar)-(sizeOne/2),(VoxelFox.Kinect.GetPerson(i).AnkleR().z*scalar)-(sizeOne/2),sizeOne)
-		glDrawCube((VoxelFox.Kinect.GetPerson(i).FootL().x*scalar)-(sizeOne/2),(VoxelFox.Kinect.GetPerson(i).FootL().y*scalar)-(sizeOne/2),(VoxelFox.Kinect.GetPerson(i).FootL().z*scalar)-(sizeOne/2),sizeOne)
-		glDrawCube((VoxelFox.Kinect.GetPerson(i).FootR().x*scalar)-(sizeOne/2),(VoxelFox.Kinect.GetPerson(i).FootR().y*scalar)-(sizeOne/2),(VoxelFox.Kinect.GetPerson(i).FootR().z*scalar)-(sizeOne/2),sizeOne)
-
-		glDrawLine(VoxelFox.Kinect.GetPerson(i).ElbowR().x*scalar,VoxelFox.Kinect.GetPerson(i).ElbowR().y*scalar,VoxelFox.Kinect.GetPerson(i).ElbowR().z*scalar,VoxelFox.Kinect.GetPerson(i).WristR().x*scalar,VoxelFox.Kinect.GetPerson(i).WristR().y*scalar,VoxelFox.Kinect.GetPerson(i).WristR().z*scalar,3)
+		if (VoxelFox.Kinect.GetPerson(i).Tracked) then
+			glDrawCube((VoxelFox.Kinect.GetPerson(i).HandR().x*scalar)-(sizeOne/2),(VoxelFox.Kinect.GetPerson(i).HandR().y*scalar)-(sizeOne/2),(VoxelFox.Kinect.GetPerson(i).HandR().z*scalar)-(sizeOne/2),sizeOne)
+			glDrawCube((VoxelFox.Kinect.GetPerson(i).HandL().x*scalar)-(sizeOne/2),(VoxelFox.Kinect.GetPerson(i).HandL().y*scalar)-(sizeOne/2),(VoxelFox.Kinect.GetPerson(i).HandL().z*scalar)-(sizeOne/2),sizeOne)
+			glDrawCube((VoxelFox.Kinect.GetPerson(i).WristR().x*scalar)-(sizeOne/2),(VoxelFox.Kinect.GetPerson(i).WristR().y*scalar)-(sizeOne/2),(VoxelFox.Kinect.GetPerson(i).WristR().z*scalar)-(sizeOne/2),sizeOne)
+			glDrawCube((VoxelFox.Kinect.GetPerson(i).WristL().x*scalar)-(sizeOne/2),(VoxelFox.Kinect.GetPerson(i).WristL().y*scalar)-(sizeOne/2),(VoxelFox.Kinect.GetPerson(i).WristL().z*scalar)-(sizeOne/2),sizeOne)
+			glDrawCube((VoxelFox.Kinect.GetPerson(i).ElbowR().x*scalar)-(sizeOne/2),(VoxelFox.Kinect.GetPerson(i).ElbowR().y*scalar)-(sizeOne/2),(VoxelFox.Kinect.GetPerson(i).ElbowR().z*scalar)-(sizeOne/2),sizeOne)
+			glDrawCube((VoxelFox.Kinect.GetPerson(i).ElbowL().x*scalar)-(sizeOne/2),(VoxelFox.Kinect.GetPerson(i).ElbowL().y*scalar)-(sizeOne/2),(VoxelFox.Kinect.GetPerson(i).ElbowL().z*scalar)-(sizeOne/2),sizeOne)
+			glDrawCube((VoxelFox.Kinect.GetPerson(i).ShoulderR().x*scalar)-(sizeOne/2),(VoxelFox.Kinect.GetPerson(i).ShoulderR().y*scalar)-(sizeOne/2),(VoxelFox.Kinect.GetPerson(i).ShoulderR().z*scalar)-(sizeOne/2),sizeOne)
+			glDrawCube((VoxelFox.Kinect.GetPerson(i).ShoulderL().x*scalar)-(sizeOne/2),(VoxelFox.Kinect.GetPerson(i).ShoulderL().y*scalar)-(sizeOne/2),(VoxelFox.Kinect.GetPerson(i).ShoulderL().z*scalar)-(sizeOne/2),sizeOne)
+			glDrawCube((VoxelFox.Kinect.GetPerson(i).ShoulderC().x*scalar)-(sizeOne/2),(VoxelFox.Kinect.GetPerson(i).ShoulderC().y*scalar)-(sizeOne/2),(VoxelFox.Kinect.GetPerson(i).ShoulderC().z*scalar)-(sizeOne/2),sizeOne)
+			glDrawCube((VoxelFox.Kinect.GetPerson(i).Head().x*scalar)-(sizeThree/2),(VoxelFox.Kinect.GetPerson(i).Head().y*scalar)-(sizeThree/2),(VoxelFox.Kinect.GetPerson(i).Head().z*scalar)-(sizeThree/2),sizeThree)
+			glDrawCube((VoxelFox.Kinect.GetPerson(i).Spine().x*scalar)-(sizeTwo/2),(VoxelFox.Kinect.GetPerson(i).Spine().y*scalar)-(sizeTwo/2),(VoxelFox.Kinect.GetPerson(i).Spine().z*scalar)-(sizeTwo/2),sizeTwo)
+			glDrawCube((VoxelFox.Kinect.GetPerson(i).HipC().x*scalar)-(sizeOne/2),(VoxelFox.Kinect.GetPerson(i).HipC().y*scalar)-(sizeOne/2),(VoxelFox.Kinect.GetPerson(i).HipC().z*scalar)-(sizeOne/2),sizeOne)
+			glDrawCube((VoxelFox.Kinect.GetPerson(i).HipL().x*scalar)-(sizeOne/2),(VoxelFox.Kinect.GetPerson(i).HipL().y*scalar)-(sizeOne/2),(VoxelFox.Kinect.GetPerson(i).HipL().z*scalar)-(sizeOne/2),sizeOne)
+			glDrawCube((VoxelFox.Kinect.GetPerson(i).HipR().x*scalar)-(sizeOne/2),(VoxelFox.Kinect.GetPerson(i).HipR().y*scalar)-(sizeOne/2),(VoxelFox.Kinect.GetPerson(i).HipR().z*scalar)-(sizeOne/2),sizeOne)
+			glDrawCube((VoxelFox.Kinect.GetPerson(i).KneeL().x*scalar)-(sizeOne/2),(VoxelFox.Kinect.GetPerson(i).KneeL().y*scalar)-(sizeOne/2),(VoxelFox.Kinect.GetPerson(i).KneeL().z*scalar)-(sizeOne/2),sizeOne)
+			glDrawCube((VoxelFox.Kinect.GetPerson(i).KneeR().x*scalar)-(sizeOne/2),(VoxelFox.Kinect.GetPerson(i).KneeR().y*scalar)-(sizeOne/2),(VoxelFox.Kinect.GetPerson(i).KneeR().z*scalar)-(sizeOne/2),sizeOne)
+			glDrawCube((VoxelFox.Kinect.GetPerson(i).AnkleL().x*scalar)-(sizeOne/2),(VoxelFox.Kinect.GetPerson(i).AnkleL().y*scalar)-(sizeOne/2),(VoxelFox.Kinect.GetPerson(i).AnkleL().z*scalar)-(sizeOne/2),sizeOne)
+			glDrawCube((VoxelFox.Kinect.GetPerson(i).AnkleR().x*scalar)-(sizeOne/2),(VoxelFox.Kinect.GetPerson(i).AnkleR().y*scalar)-(sizeOne/2),(VoxelFox.Kinect.GetPerson(i).AnkleR().z*scalar)-(sizeOne/2),sizeOne)
+			glDrawCube((VoxelFox.Kinect.GetPerson(i).FootL().x*scalar)-(sizeOne/2),(VoxelFox.Kinect.GetPerson(i).FootL().y*scalar)-(sizeOne/2),(VoxelFox.Kinect.GetPerson(i).FootL().z*scalar)-(sizeOne/2),sizeOne)
+			glDrawCube((VoxelFox.Kinect.GetPerson(i).FootR().x*scalar)-(sizeOne/2),(VoxelFox.Kinect.GetPerson(i).FootR().y*scalar)-(sizeOne/2),(VoxelFox.Kinect.GetPerson(i).FootR().z*scalar)-(sizeOne/2),sizeOne)
+			glDrawLine(VoxelFox.Kinect.GetPerson(i).ElbowR().x*scalar,VoxelFox.Kinect.GetPerson(i).ElbowR().y*scalar,VoxelFox.Kinect.GetPerson(i).ElbowR().z*scalar,VoxelFox.Kinect.GetPerson(i).WristR().x*scalar,VoxelFox.Kinect.GetPerson(i).WristR().y*scalar,VoxelFox.Kinect.GetPerson(i).WristR().z*scalar,3)
+		end
 	end
-
-	--glColor(1,.5,1)
-	--glDrawBox(0,0,1,1)
-	--glColor(1,1,1)
-	--glDrawCube(0,0,0,.25)
-
-	--glDrawBezierCurve(12,4,VoxelFox.Math.Vec3(0,0,0),VoxelFox.Math.Vec3(0,1,0),VoxelFox.Math.Vec3(0,1,1),VoxelFox.Math.Vec3(0,0,1))
 end
 
 function UI()

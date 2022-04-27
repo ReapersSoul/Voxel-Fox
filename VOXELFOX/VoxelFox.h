@@ -1,10 +1,10 @@
 #pragma once
 
 
-//assimp
-#include <assimp/Importer.hpp>      // C++ importer interface
-#include <assimp/scene.h>           // Output data structure
-#include <assimp/postprocess.h>     // Post processing flags
+////assimp
+//#include <assimp/Importer.hpp>      // C++ importer interface
+//#include <assimp/scene.h>           // Output data structure
+//#include <assimp/postprocess.h>     // Post processing flags
 
 // Include GLEW
 #include <GL/glew.h>
@@ -33,11 +33,15 @@ using namespace glm;
 #include <NuiApi.h>
 //lua 
 #include "Lua.h"
+//json
+#include <json.hpp>
 
 //DevIL
 #include <IL/il.h>
 #include <IL/ilu.h>
 #include <IL/ilut.h>
+
+#include <functional>
 
 namespace fs = std::filesystem;
 
@@ -48,7 +52,6 @@ namespace VoxelFox {
 	}
 
 	class Script {
-		typedef void (*funct)(void*, Graphics::Window*);
 	public:
 		Script() {
 		}
@@ -60,54 +63,59 @@ namespace VoxelFox {
 			obj = _obj;
 		}
 
-		bool loadLib(std::string dir) {
-			HINSTANCE hGetProcIDDLL = LoadLibrary((LPWSTR)std::wstring(dir.begin(), dir.end()).c_str());
+		template <typename T>
+		struct TypeParser {};
 
-			if (!hGetProcIDDLL) {
-				std::cout << "could not load the dynamic library" << std::endl;
-				return false;
+		template <typename Ret, typename... Args>
+		struct TypeParser<Ret(Args...)> {
+			static std::function<Ret(Args...)> createFunction(const FARPROC lpfnGetProcessID) {
+				return std::function<Ret(Args...)>(reinterpret_cast<Ret(__stdcall*)(Args...)>(lpfnGetProcessID));
+			}
+		};
+
+		std::wstring s2ws(const std::string& s)
+		{
+			int len;
+			int slength = (int)s.length() + 1;
+			len = MultiByteToWideChar(CP_ACP, 0, s.c_str(), slength, 0, 0);
+			wchar_t* buf = new wchar_t[len];
+			MultiByteToWideChar(CP_ACP, 0, s.c_str(), slength, buf, len);
+			std::wstring r(buf);
+			delete[] buf;
+			return r;
+		}
+
+		template <typename T>
+		std::function<T> loadDllFunc(LPCWSTR dllName, LPCSTR funcName) {
+			// Load DLL.
+			HINSTANCE hGetProcIDDLL = LoadLibrary(dllName);
+
+			// Check if DLL is loaded.
+			if (hGetProcIDDLL == NULL) {
+				std::cerr << "Could not load DLL \"" << dllName << "\"" << std::endl;
 			}
 
-			// resolve function address here
-			funct _Setup = (funct)GetProcAddress(hGetProcIDDLL, "Setup");
-			if (!_Setup) {
-				std::cout << "could not locate the Setup function" << std::endl;
-				return false;
-			}
-			Setupf = _Setup;
 
-			// resolve function address here
-			funct _Update = (funct)GetProcAddress(hGetProcIDDLL, "Update");
-			if (!_Update) {
-				std::cout << "could not locate the Update function" << std::endl;
-				return false;
-			}
-			Updatef = _Update;
+			// Locate function in DLL.
+			FARPROC lpfnGetProcessID = GetProcAddress(hGetProcIDDLL, funcName);
 
-			// resolve function address here
-			funct _Draw = (funct)GetProcAddress(hGetProcIDDLL, "Draw");
-			if (!_Draw) {
-				std::cout << "could not locate the Draw function" << std::endl;
-				return false;
+			// Check if function was located.
+			if (!lpfnGetProcessID) {
+				std::cerr << "Could not locate the function \"" << funcName << "\" in DLL\"" << dllName << "\"" << std::endl;
 			}
-			Drawf = _Draw;
 
-			// resolve function address here
-			funct _UI = (funct)GetProcAddress(hGetProcIDDLL, "UI");
-			if (!_UI) {
-				std::cout << "could not locate the UI function" << std::endl;
-				return false;
-			}
-			UIf = _UI;
+			// Create function object from function pointer.
+			return TypeParser<T>::createFunction(lpfnGetProcessID);
+		}
 
-			// resolve function address here
-			funct _Final = (funct)GetProcAddress(hGetProcIDDLL, "Final");
-			if (!_Final) {
-				std::cout << "could not locate the Final function" << std::endl;
-				return false;
-			}
-			Finalf = _Final;
-			return true;
+		bool loadLib(std::string dir) {		
+			Setupf = loadDllFunc<int(void*, Graphics::Window*)>(LPCWSTR(std::wstring(dir.begin(),dir.end()).c_str()), LPCSTR("Setup"));
+			Updatef = loadDllFunc<int(void*, Graphics::Window*)>(LPCWSTR(std::wstring(dir.begin(), dir.end()).c_str()), LPCSTR("Update"));
+			Drawf = loadDllFunc<int(void*, Graphics::Window*)>(LPCWSTR(std::wstring(dir.begin(), dir.end()).c_str()), LPCSTR("Draw"));
+			UIf = loadDllFunc<int(void*, Graphics::Window*)>(LPCWSTR(std::wstring(dir.begin(), dir.end()).c_str()), LPCSTR("UI"));
+			Finalf = loadDllFunc<int(void*, Graphics::Window*)>(LPCWSTR(std::wstring(dir.begin(), dir.end()).c_str()), LPCSTR("Final"));
+			
+			return (Setupf && Updatef && Drawf && UIf && Finalf);
 		}
 
 		void Setup(Graphics::Window * wind) {
@@ -128,11 +136,11 @@ namespace VoxelFox {
 
 	protected:
 		void* obj;
-		funct Setupf;
-		funct Updatef;
-		funct Drawf;
-		funct UIf;
-		funct Finalf;
+		std::function<int(void*,Graphics::Window*)> Setupf;
+		std::function<int(void*, Graphics::Window*)> Updatef;
+		std::function<int(void*, Graphics::Window*)> Drawf;
+		std::function<int(void*, Graphics::Window*)> UIf;
+		std::function<int(void*, Graphics::Window*)> Finalf;
 	};
 	
 	class ScriptLoader {
@@ -1325,7 +1333,7 @@ namespace VoxelFox {
 			{
 				error = ilGetError();
 				std::cout << "Image load failed - IL reports error: " << error << " - " << iluErrorString(error) << std::endl;
-				exit(-1);
+				return Texture(-1, theFileName, wrapingType, Interpolation);
 			}
 
 			ilDeleteImages(1, &imageID); // Because we have already copied image data into texture data we can release memory used by image.
@@ -1571,92 +1579,92 @@ namespace VoxelFox {
 			static class MeshLoader {
 
 			public:
-				static Mesh AssimpLoad(std::string pFile) {
-					Assimp::Importer importer;
+				//static Mesh AssimpLoad(std::string pFile) {
+				//	Assimp::Importer importer;
 
-					std::ifstream fin(pFile.c_str());
-					if (!fin.fail()) {
-						fin.close();
-					}
-					else {
-						printf("Couldn't open file: %s\n", pFile.c_str());
-						printf("%s\n", importer.GetErrorString());
-						return Mesh();
-					}
+				//	std::ifstream fin(pFile.c_str());
+				//	if (!fin.fail()) {
+				//		fin.close();
+				//	}
+				//	else {
+				//		printf("Couldn't open file: %s\n", pFile.c_str());
+				//		printf("%s\n", importer.GetErrorString());
+				//		return Mesh();
+				//	}
 
-					
+				//	
 
-					// And have it read the given file with some example postprocessing
-					// Usually - if speed is not the most important aspect for you - you'll
-					// probably to request more postprocessing than we do in this example.
-					const aiScene* scene = importer.ReadFile((pFile).c_str(),
-						aiProcess_CalcTangentSpace |
-						aiProcess_Triangulate |
-						aiProcess_JoinIdenticalVertices |
-						aiProcess_SortByPType);
+				//	// And have it read the given file with some example postprocessing
+				//	// Usually - if speed is not the most important aspect for you - you'll
+				//	// probably to request more postprocessing than we do in this example.
+				//	const aiScene* scene = importer.ReadFile((pFile).c_str(),
+				//		aiProcess_CalcTangentSpace |
+				//		aiProcess_Triangulate |
+				//		aiProcess_JoinIdenticalVertices |
+				//		aiProcess_SortByPType);
 
-					// If the import failed, report it
-					if (scene==nullptr) {
-						std::string tmp = importer.GetErrorString();
-						std::cout<<"Failed ASSIMP Import: " << tmp << std::endl;
-						return Mesh();
-					}
+				//	// If the import failed, report it
+				//	if (scene==nullptr) {
+				//		std::string tmp = importer.GetErrorString();
+				//		std::cout<<"Failed ASSIMP Import: " << tmp << std::endl;
+				//		return Mesh();
+				//	}
 
-					std::vector<Mesh> _Meshes;
+				//	std::vector<Mesh> _Meshes;
 
-					if (scene->HasMeshes()) {
-						for (int i = 0; i < scene->mNumMeshes; i++)
-						{
-							Mesh Ret;
-							if (scene->mMeshes[i]->HasPositions()) {
-								for (int j = 0; j < scene->mMeshes[i]->mNumVertices; j++)
-								{
-									Ret.getData()->push_back(Math::Vec3<float>(scene->mMeshes[i]->mVertices[j].x, scene->mMeshes[i]->mVertices[j].y, scene->mMeshes[i]->mVertices[j].z));
-									if (scene->mMeshes[i]->HasNormals()) {
-										Ret.getNormals()->push_back(Math::Vec3<float>(scene->mMeshes[i]->mNormals[j].x, scene->mMeshes[i]->mNormals[j].y, scene->mMeshes[i]->mNormals[j].z));
-									}
-									if (scene->mMeshes[i]->mTextureCoords[0])
-									{
-										Math::Vec2<float> vec;
+				//	if (scene->HasMeshes()) {
+				//		for (int i = 0; i < scene->mNumMeshes; i++)
+				//		{
+				//			Mesh Ret;
+				//			if (scene->mMeshes[i]->HasPositions()) {
+				//				for (int j = 0; j < scene->mMeshes[i]->mNumVertices; j++)
+				//				{
+				//					Ret.getData()->push_back(Math::Vec3<float>(scene->mMeshes[i]->mVertices[j].x, scene->mMeshes[i]->mVertices[j].y, scene->mMeshes[i]->mVertices[j].z));
+				//					if (scene->mMeshes[i]->HasNormals()) {
+				//						Ret.getNormals()->push_back(Math::Vec3<float>(scene->mMeshes[i]->mNormals[j].x, scene->mMeshes[i]->mNormals[j].y, scene->mMeshes[i]->mNormals[j].z));
+				//					}
+				//					if (scene->mMeshes[i]->mTextureCoords[0])
+				//					{
+				//						Math::Vec2<float> vec;
 
-										vec.x = scene->mMeshes[i]->mTextureCoords[0][i].x;
-										vec.y = scene->mMeshes[i]->mTextureCoords[0][i].y;
+				//						vec.x = scene->mMeshes[i]->mTextureCoords[0][i].x;
+				//						vec.y = scene->mMeshes[i]->mTextureCoords[0][i].y;
 
-										Ret.getTextureCoords()->push_back(vec);
-									}
-								}
-							}
+				//						Ret.getTextureCoords()->push_back(vec);
+				//					}
+				//				}
+				//			}
 
-							if (scene->mMeshes[i]->HasFaces()) {
-								for (int j = 0; j < scene->mMeshes[i]->mNumFaces; j++) {
-									Mesh::Face f;
-									f.face.clear();
-									for (int k = 0; k < scene->mMeshes[i]->mFaces[j].mNumIndices; k++) {
-										f.face.push_back(Math::Vec3<int>(scene->mMeshes[i]->mFaces[j].mIndices[k],0,0));
-									}
-									Ret.getFaces()->push_back(f);
-								}
-							}
-							
-							_Meshes.push_back(Ret);
-						}
-					}
-					return _Meshes[0];
-					/*if (scene->HasTextures()) {
-						for (int i = 0; i < scene->mNumTextures; i++)
-						{
-							scene->mTextures[i]
-						}
-					}
-					if (scene->HasMaterials()) {
+				//			if (scene->mMeshes[i]->HasFaces()) {
+				//				for (int j = 0; j < scene->mMeshes[i]->mNumFaces; j++) {
+				//					Mesh::Face f;
+				//					f.face.clear();
+				//					for (int k = 0; k < scene->mMeshes[i]->mFaces[j].mNumIndices; k++) {
+				//						f.face.push_back(Math::Vec3<int>(scene->mMeshes[i]->mFaces[j].mIndices[k],0,0));
+				//					}
+				//					Ret.getFaces()->push_back(f);
+				//				}
+				//			}
+				//			
+				//			_Meshes.push_back(Ret);
+				//		}
+				//	}
+				//	return _Meshes[0];
+				//	/*if (scene->HasTextures()) {
+				//		for (int i = 0; i < scene->mNumTextures; i++)
+				//		{
+				//			scene->mTextures[i]
+				//		}
+				//	}
+				//	if (scene->HasMaterials()) {
 
-					}
-					
-					if (scene->HasAnimations()) {
+				//	}
+				//	
+				//	if (scene->HasAnimations()) {
 
-					}*/
+				//	}*/
 
-				}
+				//}
 
 				struct tag {
 					tag() {
@@ -1870,9 +1878,9 @@ namespace VoxelFox {
 					if (dir_entry.path().extension() == ".obj") {
 						Models.insert(std::pair<std::string, Model>(dir_entry.path().filename().string(), MeshLoader::LoadOBJ(dir_entry.path().parent_path().string(), dir_entry.path().filename().string())));
 					}
-					else if(dir_entry.path().extension() != ".mtl" && !dir_entry.is_directory()) {
-						Meshes.insert(std::pair<std::string, Mesh>(dir_entry.path().filename().string(), MeshLoader::AssimpLoad(dir_entry.path().string())));
-					}
+					//else if(dir_entry.path().extension() != ".mtl" && !dir_entry.is_directory()) {
+					//	Meshes.insert(std::pair<std::string, Mesh>(dir_entry.path().filename().string(), MeshLoader::AssimpLoad(dir_entry.path().string())));
+					//}
 				}
 			}
 
@@ -2254,6 +2262,11 @@ namespace VoxelFox {
 				}
 			};
 
+			class BonedMesh :public Mesh {
+				BonedMesh() {
+					Mesh::Mesh();
+				}
+			};
 		}
 
 #define BUTTON_A 0
@@ -2939,6 +2952,142 @@ namespace VoxelFox {
 				DrawThread.join();
 			}
 		};
+	}
+
+	namespace VoxelSpecific {
+
+		struct Block {
+			enum Side {
+				front,
+				back,
+				right,
+				left,
+				top,
+				bottom
+			};
+			bool IsTransparent = true;
+			std::string TextureFileLocation = "";
+			std::function<void(nlohmann::json * metaData)> Update;
+			std::function<void(nlohmann::json* metaData, Side s)> Draw = [](nlohmann::json * metaData,Side s) {
+
+				glBegin(GL_QUADS);
+				switch (s)
+				{
+				case VoxelFox::VoxelSpecific::Block::front:
+					// front
+					glVertex3f(0.0f, 0.0f, 0.0f);
+					glVertex3f(1.0f, 0.0f, 0.0f);
+					glVertex3f(1.0f, 1.0f, 0.0f);
+					glVertex3f(0.0f, 1.0f, 0.0f);
+					break;
+				case VoxelFox::VoxelSpecific::Block::back:
+					// back
+					glVertex3f(0.0f, 0.0f, -1.0f);
+					glVertex3f(1.0f, 0.0f, -1.0f);
+					glVertex3f(1.0f, 1.0f, -1.0f);
+					glVertex3f(0.0f, 1.0f, -1.0f);
+					break;
+				case VoxelFox::VoxelSpecific::Block::right:
+					// right
+					glVertex3f(1.0f, 0.0f, 0.0f);
+					glVertex3f(1.0f, 0.0f, -1.0f);
+					glVertex3f(1.0f, 1.0f, -1.0f);
+					glVertex3f(1.0f, 1.0f, 0.0f);
+					break;
+				case VoxelFox::VoxelSpecific::Block::left:
+					// left
+					glVertex3f(0.0f, 0.0f, 0.0f);
+					glVertex3f(0.0f, 0.0f, -1.0f);
+					glVertex3f(0.0f, 1.0f, -1.0f);
+					glVertex3f(0.0f, 1.0f, 0.0f);
+					break;
+				case VoxelFox::VoxelSpecific::Block::top:
+					// top
+					glVertex3f(0.0f, 1.0f, 0.0f);
+					glVertex3f(1.0f, 1.0f, 0.0f);
+					glVertex3f(1.0f, 1.0f, -1.0f);
+					glVertex3f(0.0f, 1.0f, -1.0f);
+					break;
+				case VoxelFox::VoxelSpecific::Block::bottom:
+					// bottom
+					glVertex3f(0.0f, 0.0f, 0.0f);
+					glVertex3f(1.0f, 0.0f, 0.0f);
+					glVertex3f(1.0f, 0.0f, -1.0f);
+					glVertex3f(0.0f, 0.0f, -1.0f);
+					break;
+				default:
+					break;
+				}
+				glEnd();
+			};
+		};
+
+		std::map<std::string, Block> Blocks;
+
+		struct BlockData {
+			std::string BlockID;
+			nlohmann::json metaData;
+		};
+
+		template<int size>
+		struct Chunk {
+			BlockData BlocksData[size][size][size];
+			void Update() {
+				for (int x = 0; x < size; x++)
+				{
+					for (int y = 0; y < size; y++)
+					{
+						for (int z = 0; z < size; z++)
+						{
+							Blocks.find(BlocksData[x][y][z].BlockID)->second.Update(&BlocksData[x][y][z].metaData);
+						}
+					}
+				}
+			}
+
+			void Draw() {
+				for (int x = 0; x < size; x++)
+				{
+					glTranslatef(x, 0, 0);
+					for (int y = 0; y < size; y++)
+					{
+						glTranslatef(0, y, 0);
+						for (int z = 0; z < size; z++)
+						{
+							glTranslatef(z, 0, 0);
+							try {
+								if (Blocks.find(BlocksData[x+1][y][z].BlockID)->second.IsTransparent) {
+									Blocks.find(BlocksData[x][y][z].BlockID)->second.Draw(&BlocksData[x][y][z].metaData,Block::right);
+								}
+								if (Blocks.find(BlocksData[x-1][y][z].BlockID)->second.IsTransparent) {
+									Blocks.find(BlocksData[x][y][z].BlockID)->second.Draw(&BlocksData[x][y][z].metaData,Block::left);
+								}
+								if (Blocks.find(BlocksData[x][y+1][z].BlockID)->second.IsTransparent) {
+									Blocks.find(BlocksData[x][y][z].BlockID)->second.Draw(&BlocksData[x][y][z].metaData,Block::front);
+								}
+								if (Blocks.find(BlocksData[x][y-1][z].BlockID)->second.IsTransparent) {
+									Blocks.find(BlocksData[x][y][z].BlockID)->second.Draw(&BlocksData[x][y][z].metaData,Block::back);
+								}
+								if (Blocks.find(BlocksData[x][y][z+1].BlockID)->second.IsTransparent) {
+									Blocks.find(BlocksData[x][y][z].BlockID)->second.Draw(&BlocksData[x][y][z].metaData,Block::top);
+								}
+								if (Blocks.find(BlocksData[x][y][z-1].BlockID)->second.IsTransparent) {
+									Blocks.find(BlocksData[x][y][z].BlockID)->second.Draw(&BlocksData[x][y][z].metaData,Block::bottom);
+								}
+							}
+							catch (Exception e) {
+								glTranslatef(-z, 0, 0);
+								continue;
+							}
+							glTranslatef(-z, 0, 0);
+						}
+						glTranslatef(-y, 0, 0);
+					}
+					glTranslatef(-x, 0, 0);
+				}
+			}
+		};
+
 	}
 
 }

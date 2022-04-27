@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets" />
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup />
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>G:\Projects\VOXELFOX\include;G:\Libraries\Assimp\include;G:\Libraries\FBX\2020.0.1\include;G:\Libraries\DevIL Windows SDK\include;G:\Libraries\openGLLibs\glm;G:\Libraries\openGLLibs\glew-2.1.0\include;G:\Projects\VOXELFOX\IMGUI;G:\Libraries\Kinect\v1.8\inc;..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>G:\Libraries\Assimp\lib\x64;G:\Libraries\FBX\2020.3.1\lib\vs2019\x64\debug;G:\Libraries\DevIL Windows SDK\lib\x64\unicode\Release;G:\Libraries\openGLLibs\glew-2.1.0\lib\Release\x64;G:\Libraries\Kinect\v1.8\lib\x86;..\lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Kinect10.lib;lua54.lib;opengl32.lib;glfw3.lib;glfw3dll.lib;glew32.lib;glu32.lib;DevIL.lib;ILU.lib;ILUT.lib;libfbxsdk.lib;assimp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup />
+</Project>

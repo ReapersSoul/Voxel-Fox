@@ -102,6 +102,7 @@ int SelectedCam = 0;
 void Draw(Graphics::Window* window) {
 	glColor3f(1, 1, 1);
 	try {
+		luaVM.CallLuaFunct("Update");
 		luaVM.CallLuaFunct("Draw");
 		sl.Draw(window);
 	}
@@ -121,6 +122,7 @@ bool ShowMeshes = false;
 bool ShowTextures = false;
 bool ShowKinect = false;
 bool ShowCamera = false;
+bool ShowScripts = false;
 
 bool ShouldExit = false;
 
@@ -141,6 +143,9 @@ void UI(Graphics::Window* window) {
 	}
 	if(ImGui::MenuItem("Show Camera")){
 		ShowCamera = !ShowCamera;
+	}
+	if(ImGui::MenuItem("Show Scripts")){
+		ShowScripts = !ShowScripts;
 	}
 	if (ImGui::MenuItem("Exit")) {
 		ShouldExit = true;
@@ -284,10 +289,21 @@ void UI(Graphics::Window* window) {
 		}
 		ImGui::End();
 	}
+	if (ShowScripts) {
+		if (ImGui::Begin("Scripts")) {
+			if (ImGui::Button("Refresh")) {
+				sl.LoadAllScripts();
+			}
+			for (int i = 0; i < sl.GetScriptNames().size(); i++) {
+				ImGui::Text(sl.GetScriptNames()[i].c_str());
+			}
+		}
+		ImGui::End();
+	}
 
 	if (ShowKinect) {
 		if (ImGui::Begin("Kinect")) {
-			if (ImGui::InputFloat("Tile Angle", &tiltang, 1, 5)) {
+			if (ImGui::InputFloat("Tilt Angle", &tiltang, 1, 5)) {
 				NuiCameraElevationSetAngle((LONG)tiltang);
 			}
 			if (ImGui::CollapsingHeader("Colors")) {
@@ -537,7 +553,9 @@ void LuaVMSetup() {
 				double x = lua_tonumber(L, 1);
 				double y = lua_tonumber(L, 2);
 				double z = lua_tonumber(L, 3);
-				window.GetCamera(cam)->SetEyePos(VoxelFox::Math::Vec3<float>(x, y, z));
+				VoxelFox::Math::Vec3<float> pos = window.GetCamera(cam)->GetEyePos();
+				pos.Rotate(VoxelFox::Math::Vec3<float>(x, y, z));
+				window.GetCamera(cam)->SetEyePos(pos);
 				return 0;
 				});
 			Lua::lua_pushtable(L, Cam.GetTable());

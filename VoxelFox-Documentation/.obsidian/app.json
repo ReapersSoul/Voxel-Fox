@@ -1,5 +1,7 @@
 {
   "promptDelete": false,
   "alwaysUpdateLinks": true,
-  "newFileLocation": "current"
+  "newFileLocation": "current",
+  "legacyEditor": false,
+  "livePreview": true
 }

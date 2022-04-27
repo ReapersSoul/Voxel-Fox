@@ -94,7 +94,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>G:\Libraries\Assimp\lib\x86;G:\Libraries\FBX\2020.0.1\lib\vs2017\x86\debug;G:\Libraries\DevIL Windows SDK\lib\x86\unicode\Release;G:\Libraries\openGLLibs\glew-2.1.0\lib\Release\Win32;G:\Libraries\Kinect\v1.8\lib\x86;..\lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>G:\Libraries\Assimp\lib\x86;G:\Libraries\FBX\2020.3.1\lib\vs2019\x86\debug;G:\Libraries\DevIL Windows SDK\lib\x86\unicode\Release;G:\Libraries\openGLLibs\glew-2.1.0\lib\Release\Win32;G:\Libraries\Kinect\v1.8\lib\x86;..\lib</AdditionalLibraryDirectories>
       <AdditionalDependencies>Kinect10.lib;lua54.lib;opengl32.lib;glfw3.lib;glfw3dll.lib;glew32.lib;glu32.lib;DevIL.lib;ILU.lib;ILUT.lib;libfbxsdk.lib;assimp.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -114,7 +114,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>G:\Libraries\Assimp\lib\x86;G:\Libraries\FBX\2020.0.1\lib\vs2017\x86\release;G:\Libraries\DevIL Windows SDK\lib\x86\unicode\Release;G:\Libraries\openGLLibs\glew-2.1.0\lib\Release\Win32;G:\Libraries\Kinect\v1.8\lib\x86;..\lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>G:\Libraries\Assimp\lib\x86;G:\Libraries\FBX\2020.3.1\lib\vs2019\x86\release;G:\Libraries\DevIL Windows SDK\lib\x86\unicode\Release;G:\Libraries\openGLLibs\glew-2.1.0\lib\Release\Win32;G:\Libraries\Kinect\v1.8\lib\x86;..\lib</AdditionalLibraryDirectories>
       <AdditionalDependencies>Kinect10.lib;lua54.lib;opengl32.lib;glfw3.lib;glfw3dll.lib;glew32.lib;glu32.lib;DevIL.lib;ILU.lib;ILUT.lib;libfbxsdk.lib;assimp.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -130,7 +130,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>G:\Libraries\Assimp\lib\x64;G:\Libraries\FBX\2020.0.1\lib\vs2017\x64\debug;G:\Libraries\DevIL Windows SDK\lib\x64\unicode\Release;G:\Libraries\openGLLibs\glew-2.1.0\lib\Release\x64;G:\Libraries\Kinect\v1.8\lib\x86;..\lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>G:\Libraries\Assimp\lib\x64;G:\Libraries\FBX\2020.3.1\lib\vs2019\x64\debug;G:\Libraries\DevIL Windows SDK\lib\x64\unicode\Release;G:\Libraries\openGLLibs\glew-2.1.0\lib\Release\x64;G:\Libraries\Kinect\v1.8\lib\x86;..\lib</AdditionalLibraryDirectories>
       <AdditionalDependencies>Kinect10.lib;lua54.lib;opengl32.lib;glfw3.lib;glfw3dll.lib;glew32.lib;glu32.lib;DevIL.lib;ILU.lib;ILUT.lib;libfbxsdk.lib;assimp.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -150,7 +150,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>G:\Libraries\Assimp\lib\x64;G:\Libraries\FBX\2020.0.1\lib\vs2017\x64\release;G:\Libraries\DevIL Windows SDK\lib\x64\unicode\Release;G:\Libraries\openGLLibs\glew-2.1.0\lib\Release\x64;G:\Libraries\Kinect\v1.8\lib\x64;..\lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>G:\Libraries\Assimp\lib\x64;G:\Libraries\FBX\2020.3.1\lib\vs2019\x64\release;G:\Libraries\DevIL Windows SDK\lib\x64\unicode\Release;G:\Libraries\openGLLibs\glew-2.1.0\lib\Release\x64;G:\Libraries\Kinect\v1.8\lib\x64;..\lib</AdditionalLibraryDirectories>
       <AdditionalDependencies>Kinect10.lib;lua54.lib;opengl32.lib;glfw3.lib;glfw3dll.lib;glew32.lib;glu32.lib;DevIL.lib;ILU.lib;ILUT.lib;libfbxsdk.lib;assimp.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
