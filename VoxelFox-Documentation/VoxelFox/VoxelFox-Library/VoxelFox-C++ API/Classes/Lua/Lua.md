@@ -41,7 +41,7 @@ creates a global lua[[Table]] using a [[LuaTableBuilder]]. used to add class rep
 returns the lua_State for this instance.
 
 ##### [[Lua()]] :
-returns a new [[Lua]] object.
+returns a new [[VoxelFox/VoxelFox-Library/VoxelFox-C++ API/Classes/Lua/Lua]] object.
 
 ##### [[SetGlobal(string Name, (insert typename) val)]] :
 sets a global value in the lua virtal machine.
