@@ -8,19 +8,8 @@
 #include <imgui_impl_glfw.h>
 
 using namespace VoxelFox;
-int width = 0;
-int height = 0;
-
-Graphics::Geometry::Mesh GlobalMesh;
-
-Lua luaVM;
-
-Graphics::Window window;
 
 VoxelFox::ScriptLoader sl;
-
-//Lua::Table vars;
-
 float* CamEyePos[3];
 float* Campos[3];
 
@@ -354,7 +343,8 @@ void main()
 	VoxelFox::Kinect::Init();
 	srand(time(0));
 	//try {
-		LuaVMSetup(&luaVM);
+		LuaVMSetup();
+		luaVM.RunScript("main.lua");
 
 		window.Init("Voxel Fox", 1920 / 2, 1920 / 2,&Update, &Draw, &Setup,&UI,&FinalF);
 
