@@ -30,6 +30,7 @@ void Setup(Graphics::Window* window) {
 	ImGui::StyleColorsDark();
 	sl.Init();
 	sl.LoadAllScripts();
+	sl.Setup(window);
 
 	window->GetCamera(window->GetSelectedCam())->SetEyePos(Math::Vec3<float>(0, 0, 1));
 

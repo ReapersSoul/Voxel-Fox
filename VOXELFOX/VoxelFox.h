@@ -1151,6 +1151,30 @@ namespace VoxelFox {
 				ret[18] = AnkleFootR;
 				return ret;
 			}
+			Joint* GetJointsArray() {
+				Joint ret[20];
+				ret[0] = HandL;
+				ret[1] = HandR;
+				ret[2] = WristL;
+				ret[3] = WristR;
+				ret[4] = ElbowL;
+				ret[5] = ElbowR;
+				ret[6] = ShoulderL;
+				ret[7] = ShoulderR;
+				ret[8] = ShoulderC;
+				ret[9] = HipL;
+				ret[10] = HipR;
+				ret[11] = HipC;
+				ret[12] = KneeL;
+				ret[13] = KneeR;
+				ret[14] = AnkleL;
+				ret[15] = AnkleR;
+				ret[16] = FootL;
+				ret[17] = FootR;
+				ret[18] = Spine;
+				ret[19] = Head;
+				return ret;
+			}
 
 			void UpdateSkelly(NUI_SKELETON_DATA& data) {
 				//joints
@@ -1437,8 +1461,17 @@ namespace VoxelFox {
 				Math::Vec3<float> Rotation;
 				Math::Vec3<float> Pos;
 				float scale;
-				std::map<int, float> weights;
 			public:
+				void SetPos(Math::Vec3<float> po) {
+					Pos = po;
+				}
+				void SetRot(Math::Vec3<float> ro) {
+					Rotation = ro;
+				}
+				void SetScl(float s) {
+					scale = s;
+				}
+
 				Math::Vec3<float> GetGlobalPos() {
 					if (Parent != nullptr) {
 						return Parent->GetGlobalPos() + Pos;
@@ -1451,9 +1484,11 @@ namespace VoxelFox {
 				Math::Vec3<float> GetPos() {
 					return Pos;
 				}
-
-				float GetWeight(int i) {
-					return weights.find(i)->second;
+				Math::Vec3<float> GetRot() {
+					return Pos;
+				}
+				float GetScl() {
+					return scale;
 				}
 
 				Bone() {
@@ -1498,7 +1533,6 @@ namespace VoxelFox {
 				std::vector<Math::Vec2<float>> TextureCoords;
 				std::vector<Face> Faces;
 				std::vector<int> indecies;
-				Armature arm;
 			public:
 				Mesh() {
 					scl = Math::Vec3<float>(1);
@@ -1534,32 +1568,12 @@ namespace VoxelFox {
 
 				std::vector<Math::Vec3<float>> getDrawableData() {
 					std::vector<Math::Vec3<float>> ret = data;
-					if (arm.bones.empty()||arm.weights.empty()) {
 						for (int i = 0; i < ret.size(); i++)
 						{
 							ret[i].Rotate(rot);
 							ret[i] = ret[i] * scl;
 							ret[i] = ret[i] + pos;
 						}
-					}
-					else {
-						for (int i = 0; i < ret.size(); i++)
-						{
-							Math::Vec3<float> tmppoint=Math::Vec3<float>(0);
-							int total=0;
-							for (int j = 0; j < arm.bones.size(); j++)
-							{
-								if (arm.weights[i][j]!=0) {
-									total++;
-									tmppoint = tmppoint + (arm.bones[j].GetGlobalPos() * arm.weights[i][j]) + ret[i];
-								}
-							}
-							tmppoint = tmppoint / total;
-							ret[i].Rotate(rot);
-							ret[i] = ret[i] * scl;
-							ret[i] = ret[i] + pos;
-						}
-					}
 					return ret;
 				}
 
@@ -1591,8 +1605,43 @@ namespace VoxelFox {
 
 			std::map<std::string, Mesh> Meshes;
 
+			struct Animation {
+				struct AnimationFrame {
+					std::vector<Math::Vec3<float>> pos;
+					std::vector <Math::Vec3<float>> rot;
+					std::vector <float> scl;
+				};
+				std::vector<AnimationFrame> frames;
+
+				std::vector<Math::Vec3<float>> ApplyAnimationFrame(int index, Armature armIn, std::vector<Math::Vec3<float>> Data) {
+					std::vector<Math::Vec3<float>> ret = Data;
+					Armature arm = armIn;
+					for (int i = 0; i < arm.bones.size(); i++)
+					{
+						arm.bones[i].SetPos(arm.bones[i].GetPos() + frames[index].pos[i]);
+						arm.bones[i].SetRot(arm.bones[i].GetRot() + frames[index].rot[i]);
+						arm.bones[i].SetScl(arm.bones[i].GetScl() + frames[index].scl[i]);
+					}
+					for (int i = 0; i < ret.size(); i++)
+					{
+						Math::Vec3<float> tmppoint = Math::Vec3<float>(0);
+						int total = 0;
+						for (int j = 0; j < arm.bones.size(); j++)
+						{
+							if (arm.weights[i][j] != 0) {
+								total++;
+								tmppoint = tmppoint + (arm.bones[j].GetGlobalPos() * arm.weights[i][j]) + ret[i];
+							}
+						}
+						tmppoint = tmppoint / total;
+					}
+				}
+			};
+
 			class Model {
 				std::vector<std::string> meshes;
+				std::vector<Animation> anims;
+				Armature arm;
 			public:
 				std::vector<std::string>* GetMeshes() {
 					return &meshes;
@@ -1604,92 +1653,6 @@ namespace VoxelFox {
 			static class MeshLoader {
 
 			public:
-				//static Mesh AssimpLoad(std::string pFile) {
-				//	Assimp::Importer importer;
-
-				//	std::ifstream fin(pFile.c_str());
-				//	if (!fin.fail()) {
-				//		fin.close();
-				//	}
-				//	else {
-				//		printf("Couldn't open file: %s\n", pFile.c_str());
-				//		printf("%s\n", importer.GetErrorString());
-				//		return Mesh();
-				//	}
-
-				//	
-
-				//	// And have it read the given file with some example postprocessing
-				//	// Usually - if speed is not the most important aspect for you - you'll
-				//	// probably to request more postprocessing than we do in this example.
-				//	const aiScene* scene = importer.ReadFile((pFile).c_str(),
-				//		aiProcess_CalcTangentSpace |
-				//		aiProcess_Triangulate |
-				//		aiProcess_JoinIdenticalVertices |
-				//		aiProcess_SortByPType);
-
-				//	// If the import failed, report it
-				//	if (scene==nullptr) {
-				//		std::string tmp = importer.GetErrorString();
-				//		std::cout<<"Failed ASSIMP Import: " << tmp << std::endl;
-				//		return Mesh();
-				//	}
-
-				//	std::vector<Mesh> _Meshes;
-
-				//	if (scene->HasMeshes()) {
-				//		for (int i = 0; i < scene->mNumMeshes; i++)
-				//		{
-				//			Mesh Ret;
-				//			if (scene->mMeshes[i]->HasPositions()) {
-				//				for (int j = 0; j < scene->mMeshes[i]->mNumVertices; j++)
-				//				{
-				//					Ret.getData()->push_back(Math::Vec3<float>(scene->mMeshes[i]->mVertices[j].x, scene->mMeshes[i]->mVertices[j].y, scene->mMeshes[i]->mVertices[j].z));
-				//					if (scene->mMeshes[i]->HasNormals()) {
-				//						Ret.getNormals()->push_back(Math::Vec3<float>(scene->mMeshes[i]->mNormals[j].x, scene->mMeshes[i]->mNormals[j].y, scene->mMeshes[i]->mNormals[j].z));
-				//					}
-				//					if (scene->mMeshes[i]->mTextureCoords[0])
-				//					{
-				//						Math::Vec2<float> vec;
-
-				//						vec.x = scene->mMeshes[i]->mTextureCoords[0][i].x;
-				//						vec.y = scene->mMeshes[i]->mTextureCoords[0][i].y;
-
-				//						Ret.getTextureCoords()->push_back(vec);
-				//					}
-				//				}
-				//			}
-
-				//			if (scene->mMeshes[i]->HasFaces()) {
-				//				for (int j = 0; j < scene->mMeshes[i]->mNumFaces; j++) {
-				//					Mesh::Face f;
-				//					f.face.clear();
-				//					for (int k = 0; k < scene->mMeshes[i]->mFaces[j].mNumIndices; k++) {
-				//						f.face.push_back(Math::Vec3<int>(scene->mMeshes[i]->mFaces[j].mIndices[k],0,0));
-				//					}
-				//					Ret.getFaces()->push_back(f);
-				//				}
-				//			}
-				//			
-				//			_Meshes.push_back(Ret);
-				//		}
-				//	}
-				//	return _Meshes[0];
-				//	/*if (scene->HasTextures()) {
-				//		for (int i = 0; i < scene->mNumTextures; i++)
-				//		{
-				//			scene->mTextures[i]
-				//		}
-				//	}
-				//	if (scene->HasMaterials()) {
-
-				//	}
-				//	
-				//	if (scene->HasAnimations()) {
-
-				//	}*/
-
-				//}
 
 				struct tag {
 					tag() {
